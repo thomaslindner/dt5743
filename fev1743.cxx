@@ -15,6 +15,7 @@ T. Lindner, Dec 2014
 #include <stdio.h>
 #include <stdlib.h>
 #include "midas.h"
+#include "mfe.h"
 #include "unistd.h"
 #include "time.h"
 #include "sys/time.h"
@@ -45,16 +46,13 @@ const char BankName[N_DT5724][6]={"V1743"};
 // VMEIO definition
 
 /* make frontend functions callable from the C framework */
-#ifdef __cplusplus
-extern "C" {
-#endif
 
 /*-- Globals -------------------------------------------------------*/
 
 /* The frontend name (client name) as seen by other MIDAS clients   */
-char const *frontend_name = "feV1743";
+const char *frontend_name = "feV1743";
 /* The frontend file name, don't change it */
-char *frontend_file_name = (char*)__FILE__;
+const char *frontend_file_name = (char*)__FILE__;
 
 /* frontend_loop is called periodically if this variable is TRUE    */
 BOOL frontend_call_loop = FALSE;
@@ -120,9 +118,7 @@ EQUIPMENT equipment[] = {
   {""}
 };
 
-#ifdef __cplusplus
-}
-#endif
+
 
 /********************************************************************\
               Callback routines for system transitions
@@ -196,7 +192,8 @@ INT frontend_init()
 	// Open connection to digitizer
 	CAEN_DGTZ_ErrorCode ret;
 	//ret = CAEN_DGTZ_OpenDigitizer(CAEN_DGTZ_USB, 0 /*link num*/, 0, 0 /*base addr*/, &handle);
-	ret = CAEN_DGTZ_OpenDigitizer(CAEN_DGTZ_USB, 1 /*link num*/, 0,  0x81110000 , &handle);
+	//ret = CAEN_DGTZ_OpenDigitizer(CAEN_DGTZ_USB, 0 /*link num*/, 0,  0x81110000 , &handle);
+	ret = CAEN_DGTZ_OpenDigitizer(CAEN_DGTZ_USB, 0, 0,  0 , &handle);
 
 	if(ret){
 		cm_msg(MERROR, "frontend_init", "cannot open digitizer");
@@ -430,7 +427,7 @@ INT frontend_loop()
 int Nloop, Ncount;
 
 /*-- Trigger event routines ----------------------------------------*/
-extern "C" INT poll_event(INT source, INT count, BOOL test)
+ INT poll_event(INT source, INT count, BOOL test)
 /* Polling routine for events. Returns TRUE if event
    is available. If test equals TRUE, don't return. The test
    flag is used to time the polling */
@@ -457,7 +454,7 @@ extern "C" INT poll_event(INT source, INT count, BOOL test)
 }
 
 /*-- Interrupt configuration ---------------------------------------*/
-extern "C" INT interrupt_configure(INT cmd, INT source, POINTER_T adr)
+ INT interrupt_configure(INT cmd, INT source, POINTER_T adr)
 {
   switch (cmd) {
   case CMD_INTERRUPT_ENABLE:
