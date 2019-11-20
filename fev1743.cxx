@@ -208,44 +208,44 @@ INT frontend_init()
   if ((status = db_open_record(hDB, hSet[0], &(tsvc[0]), size, MODE_READ, seq_callback, NULL)) != DB_SUCCESS)
     return status;
 
-	// Open connection to digitizer
-	CAEN_DGTZ_ErrorCode ret;
-	//ret = CAEN_DGTZ_OpenDigitizer(CAEN_DGTZ_USB, 0 /*link num*/, 0, 0 /*base addr*/, &handle);
-	//ret = CAEN_DGTZ_OpenDigitizer(CAEN_DGTZ_USB, 0 /*link num*/, 0,  0x81110000 , &handle);
-	ret = CAEN_DGTZ_OpenDigitizer(CAEN_DGTZ_USB, 0, 0,  0 , &handle);
-
-	if(ret){
-		cm_msg(MERROR, "frontend_init", "cannot open digitizer");
-		return 0;
-	}else{
-		cm_msg(MINFO, "frontend_init", "successfully opened digitizer");		
-	}
-
-	
-	ret = CAEN_DGTZ_GetInfo(handle, &BoardInfo);
-	if (ret) {
-		cm_msg(MERROR, "frontend_init", "error getting info");
-
-	}
-
-	cm_msg(MINFO, "frontend_init", "Connected to CAEN Digitizer Model %s", BoardInfo.ModelName);
-	printf("ROC FPGA Release is %s\n", BoardInfo.ROC_FirmwareRel);
-	printf("AMC FPGA Release is %s\n", BoardInfo.AMC_FirmwareRel);
-
-	// If a run is going, start the digitizer running
+  // Open connection to digitizer
+  CAEN_DGTZ_ErrorCode ret;
+  //ret = CAEN_DGTZ_OpenDigitizer(CAEN_DGTZ_USB, 0 /*link num*/, 0, 0 /*base addr*/, &handle);
+  //ret = CAEN_DGTZ_OpenDigitizer(CAEN_DGTZ_USB, 0 /*link num*/, 0,  0x81110000 , &handle);
+  ret = CAEN_DGTZ_OpenDigitizer(CAEN_DGTZ_USB, 0, 0,  0 , &handle);
+  
+  if(ret){
+    cm_msg(MERROR, "frontend_init", "cannot open digitizer");
+    return 0;
+  }else{
+    cm_msg(MINFO, "frontend_init", "successfully opened digitizer");		
+  }
+  
+  
+  ret = CAEN_DGTZ_GetInfo(handle, &BoardInfo);
+  if (ret) {
+    cm_msg(MERROR, "frontend_init", "error getting info");
+    
+  }
+  
+  cm_msg(MINFO, "frontend_init", "Connected to CAEN Digitizer Model %s", BoardInfo.ModelName);
+  printf("ROC FPGA Release is %s\n", BoardInfo.ROC_FirmwareRel);
+  printf("AMC FPGA Release is %s\n", BoardInfo.AMC_FirmwareRel);
+  
+  // If a run is going, start the digitizer running
   int state = 0; 
   size = sizeof(state); 
   db_get_value(hDB, 0, "/Runinfo/State", &state, &size, TID_INT, FALSE); 
   
 
   if (state == STATE_RUNNING) 
-		initialize_for_run();
-
-	//--------------- End of Init cm_msg debug ----------------
-
-	set_equipment_status(equipment[0].name, "Initialized", "#00ff00");
-
-	//exit(0);
+    initialize_for_run();
+  
+  //--------------- End of Init cm_msg debug ----------------
+  
+  set_equipment_status(equipment[0].name, "Initialized", "#00ff00");
+  
+  //exit(0);
   printf("end of Init\n");
   return SUCCESS;
 }
@@ -260,121 +260,121 @@ INT frontend_exit()
 char *gBuffer = NULL;
 
 INT initialize_for_run(){
-
-	printf("Initializing digitizer for running\n");
-
-	int i,j, ret = 0;
-	ret |= CAEN_DGTZ_Reset(handle);
-	if (ret != 0) {
-		printf("Error: Unable to reset digitizer.\nPlease reset digitizer manually then restart the program\n");
-		return -1;
-	}
-
-	int module = 0, status;
-
-	// Get ODB settings
-	int size = sizeof(DT5724_CONFIG_SETTINGS);
-	if ((status = db_get_record (hDB, hSet[module], &tsvc[module], &size, 0)) != DB_SUCCESS)
-		return status;
-
-	// Set digitizer length	
-	//ret |= CAEN_DGTZ_SetRecordLength(handle, tsvc[module].sample_length);
-	
-	// Set post trigger
-	//ret |= CAEN_DGTZ_SetPostTriggerSize(handle, tsvc[module].post_trigger);
-	ret |= CAEN_DGTZ_SetSAMPostTriggerSize(handle, 0, 40);
-	ret |= CAEN_DGTZ_SetSAMPostTriggerSize(handle, 1, 30);
-        ret |= CAEN_DGTZ_SetSAMSamplingFrequency(handle, CAEN_DGTZ_SAM_1_6GHz);
-        ret |= CAEN_DGTZ_SetSAMCorrectionLevel(handle, CAEN_DGTZ_SAM_CORRECTION_ALL);
-        ret |= CAEN_DGTZ_LoadSAMCorrectionData(handle);
-        ret |= CAEN_DGTZ_DisableSAMPulseGen(handle,0);
-        ret |= CAEN_DGTZ_SetSAMAcquisitionMode(handle, CAEN_DGTZ_AcquisitionMode_STANDARD);
-        
-        // Set the DC offset
-        //ret |= CAEN_DGTZ_SetGroupDCOffset(handle,0,(uint32_t)tsvc[module].dac[0]);
-        //ret |= CAEN_DGTZ_SetGroupDCOffset(handle,1,(uint32_t)tsvc[module].dac[1]);
-        /*ret |= CAEN_DGTZ_SetGroupDCOffset(handle,0,0x1FFF);
-        ret |= CAEN_DGTZ_SetGroupDCOffset(handle,1,0xDFFF);*/
-        ret |= CAEN_DGTZ_SetChannelDCOffset(handle,0,0x6FFF);
-        ret |= CAEN_DGTZ_SetChannelDCOffset(handle,1,0x6FFF);
-        ret |= CAEN_DGTZ_SetChannelDCOffset(handle,2,0x8FFF);
-        ret |= CAEN_DGTZ_SetChannelDCOffset(handle,3,0x8FFF);
-	//ret |= CAEN_DGTZ_WriteRegister(handle,0x1054,0x1FFF);
-	//ret |= CAEN_DGTZ_WriteRegister(handle,0x1154,0xDFFF);
-        sleep(3);
-
-        
-
-        
-        /*uint32_t dcoffset;
-        ret |= CAEN_DGTZ_GetChannelDCOffset(handle,0,dcoffset);
-        printf("Channel0 DC offset: %x\n",dcoffset);
-        ret |= CAEN_DGTZ_GetChannelDCOffset(handle,1,dcoffset);
-        printf("Channel1 DC offset: %x\n",dcoffset);
-        ret |= CAEN_DGTZ_GetChannelDCOffset(handle,2,dcoffset);
-        printf("Channel2 DC offset: %x\n",dcoffset);
-        ret |= CAEN_DGTZ_GetChannelDCOffset(handle,3,dcoffset);
-        printf("Channel3 DC offset: %x\n",dcoffset);*/
-
-        
-
-        ret |= CAEN_DGTZ_SetAnalogMonOutput(handle,CAEN_DGTZ_AM_TRIGGER_MAJORITY);
-        
-
-        //ret |= CAEN_DGTZ_SetChannelEnableMask(handle, 2);
-
-	// enable the external trigger
-	ret |= CAEN_DGTZ_SetAcquisitionMode(handle, CAEN_DGTZ_SW_CONTROLLED);
-	ret |= CAEN_DGTZ_SetExtTriggerInputMode(handle, CAEN_DGTZ_TRGMODE_ACQ_AND_EXTOUT);
-	//ret |= CAEN_DGTZ_SetExtTriggerInputMode(handle, CAEN_DGTZ_TRGMODE_DISABLED);
-
-        //Enable the trigger on channel
-	//ret |= CAEN_DGTZ_SetChannelSelfTrigger(handle,CAEN_DGTZ_TRGMODE_ACQ_ONLY,1);
-
-        //ret |= CAEN_DGTZ_SetChannelTriggerThreshold(handle,0,(uint32_t)tsvc[module].threshold[0]);
-        //ret |= CAEN_DGTZ_SetChannelTriggerThreshold(handle,1,(uint32_t)tsvc[module].threshold[1]);
-
-        //ret |= CAEN_DGTZ_SetTriggerPolarity(handle,0,CAEN_DGTZ_TriggerOnFallingEdge);
-        //ret |= CAEN_DGTZ_SetTriggerPolarity(handle,1,CAEN_DGTZ_TriggerOnRisingEdge);
-
-        //ret |= CAEN_DGTZ_WriteRegister(handle,0x1084,1);
-
-        uint32_t testdata;
-        CAEN_DGTZ_ReadRegister(handle,0xEF00,&testdata);
-        printf("Block Bit %x\n",testdata);
-        //testdata = testdata+0x20;
-        //testdata = 0x0;
-        //CAEN_DGTZ_WriteRegister(handle,0xEF00,testdata);
-
-	
-	sleep(1);
-
-	// Only want to allocate memory once
-	static int allocatedBufferMemory = 0;
-	
-	if(!allocatedBufferMemory){
-
-		uint32_t AllocatedSize;
-		
-		// Allocate buffer memory.  Seems to only need to happen once.
-		int ret3 = CAEN_DGTZ_MallocReadoutBuffer(handle, &gBuffer,&AllocatedSize); /* WARNING: This malloc must be done after the digitizer programming */
-		if(ret3) {
-			printf("Failed to malloc readout buffer\n");
-		}
-		
-		allocatedBufferMemory = 1;
-	}
-
-	// Use NIM IO for trigger in.
-	//CAEN_DGTZ_WriteRegister(handle,0x811c,0x0);
-
-	// Use TTL IO for trigger in.
-	CAEN_DGTZ_WriteRegister(handle,0x811c,0x1);
-
-	// Start the acquisition
-	CAEN_DGTZ_SWStartAcquisition(handle);
-
-	return ret;
+  
+  printf("Initializing digitizer for running\n");
+  
+  int i,j, ret = 0;
+  ret |= CAEN_DGTZ_Reset(handle);
+  if (ret != 0) {
+    printf("Error: Unable to reset digitizer.\nPlease reset digitizer manually then restart the program\n");
+    return -1;
+  }
+  
+  int module = 0, status;
+  
+  // Get ODB settings
+  int size = sizeof(DT5724_CONFIG_SETTINGS);
+  if ((status = db_get_record (hDB, hSet[module], &tsvc[module], &size, 0)) != DB_SUCCESS)
+    return status;
+  
+  // Set digitizer length	
+  //ret |= CAEN_DGTZ_SetRecordLength(handle, tsvc[module].sample_length);
+  
+  // Set post trigger
+  //ret |= CAEN_DGTZ_SetPostTriggerSize(handle, tsvc[module].post_trigger);
+  ret |= CAEN_DGTZ_SetSAMPostTriggerSize(handle, 0, 40);
+  ret |= CAEN_DGTZ_SetSAMPostTriggerSize(handle, 1, 30);
+  ret |= CAEN_DGTZ_SetSAMSamplingFrequency(handle, CAEN_DGTZ_SAM_1_6GHz);
+  ret |= CAEN_DGTZ_SetSAMCorrectionLevel(handle, CAEN_DGTZ_SAM_CORRECTION_ALL);
+  ret |= CAEN_DGTZ_LoadSAMCorrectionData(handle);
+  ret |= CAEN_DGTZ_DisableSAMPulseGen(handle,0);
+  ret |= CAEN_DGTZ_SetSAMAcquisitionMode(handle, CAEN_DGTZ_AcquisitionMode_STANDARD);
+  
+  // Set the DC offset
+  //ret |= CAEN_DGTZ_SetGroupDCOffset(handle,0,(uint32_t)tsvc[module].dac[0]);
+  //ret |= CAEN_DGTZ_SetGroupDCOffset(handle,1,(uint32_t)tsvc[module].dac[1]);
+  /*ret |= CAEN_DGTZ_SetGroupDCOffset(handle,0,0x1FFF);
+    ret |= CAEN_DGTZ_SetGroupDCOffset(handle,1,0xDFFF);*/
+  ret |= CAEN_DGTZ_SetChannelDCOffset(handle,0,0x6FFF);
+  ret |= CAEN_DGTZ_SetChannelDCOffset(handle,1,0x6FFF);
+  ret |= CAEN_DGTZ_SetChannelDCOffset(handle,2,0x8FFF);
+  ret |= CAEN_DGTZ_SetChannelDCOffset(handle,3,0x8FFF);
+  //ret |= CAEN_DGTZ_WriteRegister(handle,0x1054,0x1FFF);
+  //ret |= CAEN_DGTZ_WriteRegister(handle,0x1154,0xDFFF);
+  sleep(3);
+  
+  
+  
+  
+  /*uint32_t dcoffset;
+    ret |= CAEN_DGTZ_GetChannelDCOffset(handle,0,dcoffset);
+    printf("Channel0 DC offset: %x\n",dcoffset);
+    ret |= CAEN_DGTZ_GetChannelDCOffset(handle,1,dcoffset);
+    printf("Channel1 DC offset: %x\n",dcoffset);
+    ret |= CAEN_DGTZ_GetChannelDCOffset(handle,2,dcoffset);
+    printf("Channel2 DC offset: %x\n",dcoffset);
+    ret |= CAEN_DGTZ_GetChannelDCOffset(handle,3,dcoffset);
+    printf("Channel3 DC offset: %x\n",dcoffset);*/
+  
+  
+  
+  ret |= CAEN_DGTZ_SetAnalogMonOutput(handle,CAEN_DGTZ_AM_TRIGGER_MAJORITY);
+  
+  
+  //ret |= CAEN_DGTZ_SetChannelEnableMask(handle, 2);
+  
+  // enable the external trigger
+  ret |= CAEN_DGTZ_SetAcquisitionMode(handle, CAEN_DGTZ_SW_CONTROLLED);
+  ret |= CAEN_DGTZ_SetExtTriggerInputMode(handle, CAEN_DGTZ_TRGMODE_ACQ_AND_EXTOUT);
+  //ret |= CAEN_DGTZ_SetExtTriggerInputMode(handle, CAEN_DGTZ_TRGMODE_DISABLED);
+  
+  //Enable the trigger on channel
+  //ret |= CAEN_DGTZ_SetChannelSelfTrigger(handle,CAEN_DGTZ_TRGMODE_ACQ_ONLY,1);
+  
+  //ret |= CAEN_DGTZ_SetChannelTriggerThreshold(handle,0,(uint32_t)tsvc[module].threshold[0]);
+  //ret |= CAEN_DGTZ_SetChannelTriggerThreshold(handle,1,(uint32_t)tsvc[module].threshold[1]);
+  
+  //ret |= CAEN_DGTZ_SetTriggerPolarity(handle,0,CAEN_DGTZ_TriggerOnFallingEdge);
+  //ret |= CAEN_DGTZ_SetTriggerPolarity(handle,1,CAEN_DGTZ_TriggerOnRisingEdge);
+  
+  //ret |= CAEN_DGTZ_WriteRegister(handle,0x1084,1);
+  
+  uint32_t testdata;
+  CAEN_DGTZ_ReadRegister(handle,0xEF00,&testdata);
+  printf("Block Bit %x\n",testdata);
+  //testdata = testdata+0x20;
+  //testdata = 0x0;
+  //CAEN_DGTZ_WriteRegister(handle,0xEF00,testdata);
+  
+  
+  sleep(1);
+  
+  // Only want to allocate memory once
+  static int allocatedBufferMemory = 0;
+  
+  if(!allocatedBufferMemory){
+    
+    uint32_t AllocatedSize;
+    
+    // Allocate buffer memory.  Seems to only need to happen once.
+    int ret3 = CAEN_DGTZ_MallocReadoutBuffer(handle, &gBuffer,&AllocatedSize); /* WARNING: This malloc must be done after the digitizer programming */
+    if(ret3) {
+      printf("Failed to malloc readout buffer\n");
+    }
+    
+    allocatedBufferMemory = 1;
+  }
+  
+  // Use NIM IO for trigger in.
+  //CAEN_DGTZ_WriteRegister(handle,0x811c,0x0);
+  
+  // Use TTL IO for trigger in.
+  CAEN_DGTZ_WriteRegister(handle,0x811c,0x1);
+  
+  // Start the acquisition
+  CAEN_DGTZ_SWStartAcquisition(handle);
+  
+  return ret;
 }
 
 
@@ -383,7 +383,7 @@ INT begin_of_run(INT run_number, char *error)
 {
 
 
-	initialize_for_run();
+  initialize_for_run();
 
   //------ FINAL ACTIONS before BOR -----------
   printf("End of BOR\n");
