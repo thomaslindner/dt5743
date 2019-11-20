@@ -41,7 +41,8 @@ extern BOOL debug;
 HNDLE hSet[N_DT5724];
 DT5724_CONFIG_SETTINGS tsvc[N_DT5724];
 //const char BankName[N_DT5724][5]={"D724"};
-const char BankName[N_DT5724][6]={"V1743"};
+const char BankName[N_DT5724][5]={"43FS"};
+const char BankNameSlow[N_DT5724][5]={"43SL"};
 
 // VMEIO definition
 
@@ -93,6 +94,7 @@ INT resume_run(INT run_number, char *error);
 INT frontend_loop();
 extern void interrupt_routine(void);
 INT read_trigger_event(char *pevent, INT off);
+INT read_slow_event(char *pevent, INT off);
 
 /*-- Equipment list ------------------------------------------------*/
 #undef USE_INT
@@ -114,6 +116,23 @@ EQUIPMENT equipment[] = {
       "", "", "",
     },
     read_trigger_event,       /* readout routine */
+  },
+  { "DT7542_Slow",                 /* equipment name */
+    {
+      EQ_EVID, EQ_TRGMSK,     /* event ID, trigger mask */
+      "SYSTEM",              /* event buffer */
+      EQ_PERIODIC ,      /* equipment type */
+      LAM_SOURCE(0, 0x8111),     /* event source crate 0, all stations */
+      "MIDAS",                /* format */
+      TRUE,                   /* enabled */
+      511,             /* read only when running */
+      500,                    /* poll for 500ms */
+      0,                      /* stop run after this event limit */
+      0,                      /* number of sub events */
+      0,                      /* don't log history */
+      "", "", "",
+    },
+    read_slow_event,       /* readout routine */
   },
   {""}
 };
@@ -436,13 +455,13 @@ int Nloop, Ncount;
   register int lam = 0;
 
   for (i = 0; i < count; i++) {
-
-		// Read the correct register to check number of events stored on digitizer.
-		uint32_t Data;
-		CAEN_DGTZ_ReadRegister(handle,0x812c,&Data);
-		if(Data > 0) lam = 1;
-
-		ss_sleep(1);
+    
+    // Read the correct register to check number of events stored on digitizer.
+    uint32_t Data;
+    CAEN_DGTZ_ReadRegister(handle,0x812c,&Data);
+    if(Data > 0) lam = 1;
+    
+    ss_sleep(1);
     if (lam) {
       Nloop = i; Ncount = count;
       if (!test){
@@ -474,17 +493,10 @@ int vf48_error = 0;
 #include <stdint.h>
 INT read_trigger_event(char *pevent, INT off)
 {
-	//printf("entered read trig\n");
-
-
    // Get number of events in buffer
    uint32_t buffsize;
    uint32_t numEvents;    
 	
-   //uint32_t Data;
-	
-   //CAEN_DGTZ_ReadRegister(handle,0x812c,&Data);
-   //printf("Number stored before = %i\n",Data);
 
    int ret2 =  CAEN_DGTZ_ReadData(handle, CAEN_DGTZ_SLAVE_TERMINATED_READOUT_MBLT, gBuffer, &buffsize);
 	//int ret2 =  CAEN_DGTZ_ReadData(handle, CAEN_DGTZ_SLAVE_TERMINATED_READOUT_2eVME, gBuffer, &buffsize);
@@ -492,37 +504,10 @@ INT read_trigger_event(char *pevent, INT off)
       printf("Failed to read data,\n");
    }
 
-   /*CAEN_DGTZ_UINT16_EVENT_t *Evt = NULL;
-   CAEN_DGTZ_EventInfo_t eventInfo;
-   char * evtptr = NULL;
-   CAEN_DGTZ_GetNumEvents(handle,gBuffer,buffsize,&numEvents);
-   printf("Number of events %d\n",numEvents);
-   CAEN_DGTZ_GetEventInfo(handle,gBuffer,buffsize,0,&eventInfo,&evtptr);
-   printf("Test 11 \n");
-   CAEN_DGTZ_DecodeEvent(handle,evtptr,&Evt);
-   printf("Test 12 \n");
-   CAEN_DGTZ_FreeEvent(handle,&Evt);
-   printf("Test 13 \n");*/
-
-   //CAEN_DGTZ_ReadRegister(handle,0x812c,&Data);
-   //printf("Number stored after = %i\n",Data);
-
-   //printf("Buffer size %d\n",buffsize);
    uint32_t * words = (uint32_t*)gBuffer;
-   /*printf("0x%x 0x%x 0x%x 0x%x\n",words[0],words[1],words[2],words[3]);
-   printf("0x%x 0x%x 0x%x 0x%x\n",words[4],words[5],words[6],words[7]);
-   printf("0x%x 0x%x 0x%x 0x%x\n",words[8],words[9],words[10],words[11]);
-   printf("0x%x 0x%x 0x%x 0x%x\n",words[12],words[13],words[14],words[15]);
-   printf("0x%x 0x%x 0x%x 0x%x\n",words[16],words[17],words[18],words[19]);*/
-   //printf("0x%x 0x%x 0x%x 0x%x\n",words[20],words[21],words[22],words[23]);
-   /*printf("0x%x 0x%x 0x%x 0x%x\n\n",words[24],words[25],words[26],words[27]);*/
 
-//  time(&rawtime);
-//  timeinfo = localtime(&rawtime);
    gettimeofday(&te,NULL);
-   //printf("%d %d\n",(int)(te.tv_sec),(int)(te.tv_usec));
    long long etime = (long long)(te.tv_sec)*1000+(int)te.tv_usec/1000;
-   //printf("%lld\n",etime); 
 
    uint32_t etime1, etime2;
    etime1 = ((etime>>32)&0xFFFFFFFF);
@@ -556,6 +541,46 @@ INT read_trigger_event(char *pevent, INT off)
    //primitive progress bar
    //if (sn % 100 == 0) printf(".%d",bk_size(pevent));
 
+   return bk_size(pevent);
+
+}
+ 
+/*-- Event readout -------------------------------------------------*/
+
+INT read_slow_event(char *pevent, INT off)
+{
+
+
+   gettimeofday(&te,NULL);
+   long long etime = (long long)(te.tv_sec)*1000+(int)te.tv_usec/1000;
+
+   uint32_t etime1, etime2;
+   etime1 = ((etime>>32)&0xFFFFFFFF);
+   etime2 = ((etime)&0xFFFFFFFF);
+
+   uint32_t *pddata;
+   uint32_t nEvtSze;
+   uint32_t sn = SERIAL_NUMBER(pevent);
+
+   // Create event header
+   bk_init32(pevent);
+
+   bk_create(pevent, BankNameSlow[0], TID_DWORD, (void**)&pddata);//cast to void (arturo 25/11/15)
+
+   //Add the time to the beginning
+   *pddata++ = etime1;
+   *pddata++ = etime2;
+
+   // Get number of stored events
+   uint32_t Data;
+   CAEN_DGTZ_ReadRegister(handle,0x812c,&Data);
+   *pddata++ = Data;
+
+   bk_close(pevent, pddata);	
+   
+   // Send a software trigger.
+   CAEN_DGTZ_SendSWtrigger(handle);
+   
    return bk_size(pevent);
 
 }
