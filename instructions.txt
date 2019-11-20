@@ -1,0 +1,5 @@
+1. To compile:
+make
+
+2. To start front end:
+./fev1743.exe -e pmttest
