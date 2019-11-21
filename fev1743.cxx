@@ -588,9 +588,11 @@ INT read_slow_event(char *pevent, INT off)
 
    bk_close(pevent, pddata);	
    
-   // Send a software trigger.
-   int ret = CAEN_DGTZ_SendSWtrigger(handle);
-   //printf("SW Trigger returns %i\n",ret);
+   // Send a software trigger
+   if(tsvc[0].sw_trigger){
+     int ret = CAEN_DGTZ_SendSWtrigger(handle);
+     //printf("SW Trigger returns %i\n",ret);
+   }
 
    return bk_size(pevent);
 

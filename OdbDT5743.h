@@ -21,6 +21,7 @@ typedef struct {
   DWORD       group_mask;     
   DWORD       record_length;
   DWORD     trigger_source;         // 0x810C@[31.. 0]
+  DWORD     sw_trigger; 
   DWORD     post_trigger[2];           // 0x8114@[31.. 0]
   DWORD     dac[8];                 // 0x1n98@[15.. 0]
 } DT5743_CONFIG_SETTINGS;
@@ -30,6 +31,7 @@ typedef struct {
 "group mask = DWORD : 3",\
 "record length = DWORD : 500",\
 "trigger source = DWORD : 0xffffffff",\         
+"software trigger = DWORD : 0",\         
 "post trigger = DWORD[2] : ",\
 "[0] 200",\
 "[1] 200",\
