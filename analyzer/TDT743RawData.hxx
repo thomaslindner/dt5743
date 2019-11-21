@@ -10,37 +10,50 @@
 class RawChannelMeasurement {
 
   friend class TDT743RawData;
-
+  
 public:
   
-	int GetNSamples(){
-		return  fSamples.size();
-	}
-	
-	int GetChannel(){ return fChan;}
-
+  int GetNSamples(){
+    return  fSamples.size();
+  }
+  
+  int GetChannel(){ return fChan;}
+  
   /// Get Errors
   uint32_t GetSample(int i){
-		if(i >= 0 && i < (int)fSamples.size())
-			return fSamples[i];
-		return 9999999;
-	}
+    if(i >= 0 && i < (int)fSamples.size())
+      return fSamples[i];
+    return 9999999;
+  }
+  
+  void AddSamples(std::vector<uint32_t> Samples){
+    fSamples = Samples;
+  }
 
-	void AddSamples(std::vector<uint32_t> Samples){
-		fSamples = Samples;
-	}
+  void SetFrequency(int freq){fFreq = freq;}
+  int  GetFrequency(){ return fFreq;}
 
+  void SetHitCounter(int counter){fHitCounter = counter;}
+  int  GetHitCounter(){return fHitCounter;}
+  
+  void SetTimeCounter(int counter){fTimeCounter = counter;}
+  int  GetTimeCounter(){return fTimeCounter;}  
+  
+  
 private:
-
-	int fChan; // channel number
-
+  
+  int fChan; // channel number
+  
   /// Constructor; need to pass in header and measurement.
   RawChannelMeasurement(int chan){
-		fChan = chan;
-	}
-
-	std::vector<uint32_t> fSamples;
-
+    fChan = chan;
+  }
+  
+  std::vector<uint32_t> fSamples;
+  int fFreq;
+  int fHitCounter;
+  int fTimeCounter;
+  
 
 };
 
@@ -66,8 +79,8 @@ public:
   /// Get the extended trigger time tag
   uint32_t GetTriggerTimeTag() const {return fGlobalHeader[3];};
 
-	/// Get channel mask
-	uint32_t GetChMask(){return (fGlobalHeader[1] & 0xff) + ((fGlobalHeader[2] & 0xff000000) >> 16);};
+  /// Get channel mask
+  uint32_t GetChMask(){return (fGlobalHeader[1] & 0xff) + ((fGlobalHeader[2] & 0xff000000) >> 16);};
 
   void Print();
 
