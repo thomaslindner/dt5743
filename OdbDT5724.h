@@ -1,19 +1,17 @@
 /***************************************************************************/
 /*                                                                         */
-/*  Filename: OdbDT5724.h                                                   */
+/*  Filename:                                                    */
 /*                                                                         */
-/*  Function: headerfile for a single DT5724 module                         */
+/*  Function: headerfile for a single DT5743 module                         */
 /*                                                                         */
 /* ----------------------------------------------------------------------- */
 /*                                                                         */
 /***************************************************************************/
 
-#ifndef  ODBDT5724_INCLUDE_H
-#define  ODBDT5724_INCLUDE_H
+#ifndef  ODBDT5743_INCLUDE_H
+#define  ODBDT5743_INCLUDE_H
 
 typedef struct {
-  INT       setup;
-  INT       acq_mode;               // 0x8100@[ 1.. 0]
   INT       buffer_organization;    // 0x800C@[ 3.. 0]
   INT       custom_size;            // 0x8020@[31.. 0]
   INT       ch_mask;                // 0x8120@[15.. 0]

@@ -20,7 +20,7 @@ T. Lindner, Dec 2014
 #include "time.h"
 #include "sys/time.h"
 
-#include "OdbDT5724.h"
+#include "OdbDT5743.h"
 
 // CAEN includes
 #include <CAENDigitizer.h>
@@ -32,17 +32,17 @@ T. Lindner, Dec 2014
 #define CAEN_USE_DIGITIZERS
 
 /* Globals */
-#define N_DT5724 1
+#define N_DT5743 1
 
 /* Hardware */
 extern HNDLE hDB;
 extern BOOL debug;
 
-HNDLE hSet[N_DT5724];
-DT5724_CONFIG_SETTINGS tsvc[N_DT5724];
-//const char BankName[N_DT5724][5]={"D724"};
-const char BankName[N_DT5724][5]={"43FS"};
-const char BankNameSlow[N_DT5724][5]={"43SL"};
+HNDLE hSet[N_DT5743];
+DT5743_CONFIG_SETTINGS tsvc[N_DT5743];
+//const char BankName[N_DT5743][5]={"D743"};
+const char BankName[N_DT5743][5]={"43FS"};
+const char BankNameSlow[N_DT5743][5]={"43SL"};
 
 // VMEIO definition
 
@@ -71,7 +71,7 @@ INT max_event_size_frag = 5 * 1024 * 1024;
 INT event_buffer_size = 2 * max_event_size + 10000;
 
 /* VME base address */
-int   dt5724_handle[N_DT5724];
+int   dt5743_handle[N_DT5743];
 
 int  linRun = 0;
 int  done=0, stop_req=0;
@@ -172,7 +172,7 @@ void seq_callback(INT hDB, INT hseq, void *info)
   KEY key;
 
   printf("odb ... Settings %x touched\n", hseq);
-  for (int b=0;b<N_DT5724;b++) {
+  for (int b=0;b<N_DT5743;b++) {
     if (hseq == hSet[b]) {
       db_get_key(hDB, hseq, &key);
       printf("odb ... Settings %s touched\n", key.name);
@@ -196,15 +196,15 @@ INT frontend_init()
   //  setbuf(stderr, NULL);
   printf("begin of Init\n");
   /* Book Setting space */
-  DT5724_CONFIG_SETTINGS_STR(dt5724_config_settings_str);
+  DT5743_CONFIG_SETTINGS_STR(dt5743_config_settings_str);
 
-  sprintf(set_str, "/Equipment/V1743/Settings/DTV1743");
-  status = db_create_record(hDB, 0, set_str, strcomb(dt5724_config_settings_str));
+  sprintf(set_str, "/Equipment/DT5743/Settings/DT5743");
+  status = db_create_record(hDB, 0, set_str, strcomb(dt5743_config_settings_str));
   status = db_find_key (hDB, 0, set_str, &hSet[0]);
   if (status != DB_SUCCESS) cm_msg(MINFO,"FE","Key %s not found", set_str);
 
   /* Enable hot-link on settings/ of the equipment */
-  size = sizeof(DT5724_CONFIG_SETTINGS);
+  size = sizeof(DT5743_CONFIG_SETTINGS);
   if ((status = db_open_record(hDB, hSet[0], &(tsvc[0]), size, MODE_READ, seq_callback, NULL)) != DB_SUCCESS)
     return status;
 
@@ -273,55 +273,65 @@ INT initialize_for_run(){
   int module = 0, status;
   
   // Get ODB settings
-  int size = sizeof(DT5724_CONFIG_SETTINGS);
+  int size = sizeof(DT5743_CONFIG_SETTINGS);
   if ((status = db_get_record (hDB, hSet[module], &tsvc[module], &size, 0)) != DB_SUCCESS)
     return status;
   
   // Set digitizer length	
-  //ret |= CAEN_DGTZ_SetRecordLength(handle, tsvc[module].sample_length);
-  
+  //ret = CAEN_DGTZ_SetRecordLength(handle, tsvc[module].record_length);
+  //if(ret != 0) printf("Error setting record length: %i %i\n",ret,tsvc[module].record_length);
+
   // Set post trigger
-  //ret |= CAEN_DGTZ_SetPostTriggerSize(handle, tsvc[module].post_trigger);
-  ret |= CAEN_DGTZ_SetSAMPostTriggerSize(handle, 0, 40);
-  ret |= CAEN_DGTZ_SetSAMPostTriggerSize(handle, 1, 30);
-  ret |= CAEN_DGTZ_SetSAMSamplingFrequency(handle, CAEN_DGTZ_SAM_1_6GHz);
-  ret |= CAEN_DGTZ_SetSAMCorrectionLevel(handle, CAEN_DGTZ_SAM_CORRECTION_ALL);
-  ret |= CAEN_DGTZ_LoadSAMCorrectionData(handle);
-  ret |= CAEN_DGTZ_DisableSAMPulseGen(handle,0);
-  ret |= CAEN_DGTZ_SetSAMAcquisitionMode(handle, CAEN_DGTZ_AcquisitionMode_STANDARD);
+  ret = CAEN_DGTZ_SetSAMPostTriggerSize(handle, 0, tsvc[module].post_trigger[0]);
+  ret = CAEN_DGTZ_SetSAMPostTriggerSize(handle, 1, tsvc[module].post_trigger[1]);
+  if(ret != 0) printf("Error setting post trigger: %i %i %i \n",ret,tsvc[module].post_trigger[0],tsvc[module].post_trigger[1]);
+
+  // Set Sampling frequency
+  ret = CAEN_DGTZ_SetSAMSamplingFrequency(handle, tsvc[module].frequency);
+  if(ret != 0) printf("Error setting frequency: %i\n",ret);
+  
+  // Other sampling parameters
+  ret = CAEN_DGTZ_SetSAMCorrectionLevel(handle, CAEN_DGTZ_SAM_CORRECTION_ALL);
+  if(ret != 0) printf("Error setting CorLevel: %i\n",ret);
+  ret = CAEN_DGTZ_LoadSAMCorrectionData(handle);
+  if(ret != 0) printf("Error setting Correction Data: %i\n",ret);
+  ret = CAEN_DGTZ_DisableSAMPulseGen(handle,0);
+  if(ret != 0) printf("Error setting PulseGen: %i\n",ret);
+  ret = CAEN_DGTZ_SetSAMAcquisitionMode(handle, CAEN_DGTZ_AcquisitionMode_STANDARD);
+  if(ret != 0) printf("Error setting Acq Mode: %i\n",ret);
   
   // Set the DC offset
-  //ret |= CAEN_DGTZ_SetGroupDCOffset(handle,0,(uint32_t)tsvc[module].dac[0]);
-  //ret |= CAEN_DGTZ_SetGroupDCOffset(handle,1,(uint32_t)tsvc[module].dac[1]);
-  /*ret |= CAEN_DGTZ_SetGroupDCOffset(handle,0,0x1FFF);
-    ret |= CAEN_DGTZ_SetGroupDCOffset(handle,1,0xDFFF);*/
-  ret |= CAEN_DGTZ_SetChannelDCOffset(handle,0,0x6FFF);
-  ret |= CAEN_DGTZ_SetChannelDCOffset(handle,1,0x6FFF);
-  ret |= CAEN_DGTZ_SetChannelDCOffset(handle,2,0x8FFF);
-  ret |= CAEN_DGTZ_SetChannelDCOffset(handle,3,0x8FFF);
-  //ret |= CAEN_DGTZ_WriteRegister(handle,0x1054,0x1FFF);
-  //ret |= CAEN_DGTZ_WriteRegister(handle,0x1154,0xDFFF);
+  for(int i = 0; i < 8; i++){
+    ret = CAEN_DGTZ_SetChannelDCOffset(handle,i,(uint32_t)tsvc[module].dac[i]);
+    if(ret != 0 && ret != -17 ) printf("Error setting DAC: %i\n",ret);
+  
+  }
+
+  // Set Group enable
+  ret = CAEN_DGTZ_SetGroupEnableMask(handle, tsvc[module].group_mask);
+    if(ret != 0) printf("Error setting group enable: %i\n",ret);
+  
+
   sleep(3);
   
   
   
-  
-  /*uint32_t dcoffset;
-    ret |= CAEN_DGTZ_GetChannelDCOffset(handle,0,dcoffset);
-    printf("Channel0 DC offset: %x\n",dcoffset);
-    ret |= CAEN_DGTZ_GetChannelDCOffset(handle,1,dcoffset);
-    printf("Channel1 DC offset: %x\n",dcoffset);
-    ret |= CAEN_DGTZ_GetChannelDCOffset(handle,2,dcoffset);
-    printf("Channel2 DC offset: %x\n",dcoffset);
-    ret |= CAEN_DGTZ_GetChannelDCOffset(handle,3,dcoffset);
-    printf("Channel3 DC offset: %x\n",dcoffset);*/
-  
-  
+  printf("Check values on DT5743: \n");
+  uint32_t dcoffset;
+  ret |= CAEN_DGTZ_GetRecordLength(handle,&dcoffset);
+  printf("record length: %x\n",dcoffset);
+  //  ret |= CAEN_DGTZ_GetSAMSamplingFrequency(handle,&dcoffset);
+  //  printf("sampling frequency: %x\n",dcoffset);
+  ret |= CAEN_DGTZ_GetChannelDCOffset(handle,0,&dcoffset);
+  printf("Channel0 DC offset: %x\n",dcoffset);
+  ret |= CAEN_DGTZ_GetChannelDCOffset(handle,1,&dcoffset);
+  printf("Channel1 DC offset: %x\n",dcoffset);
+    ret |= CAEN_DGTZ_GetChannelDCOffset(handle,2,&dcoffset);
+  printf("Channel0 DC offset: %x\n",dcoffset);
+  ret |= CAEN_DGTZ_GetChannelDCOffset(handle,3,&dcoffset);
+  printf("Channel1 DC offset: %x\n",dcoffset);
   
   ret |= CAEN_DGTZ_SetAnalogMonOutput(handle,CAEN_DGTZ_AM_TRIGGER_MAJORITY);
-  
-  
-  //ret |= CAEN_DGTZ_SetChannelEnableMask(handle, 2);
   
   // enable the external trigger
   ret |= CAEN_DGTZ_SetAcquisitionMode(handle, CAEN_DGTZ_SW_CONTROLLED);
@@ -579,8 +589,9 @@ INT read_slow_event(char *pevent, INT off)
    bk_close(pevent, pddata);	
    
    // Send a software trigger.
-   CAEN_DGTZ_SendSWtrigger(handle);
-   
+   int ret = CAEN_DGTZ_SendSWtrigger(handle);
+   //printf("SW Trigger returns %i\n",ret);
+
    return bk_size(pevent);
 
 }
