@@ -30,6 +30,12 @@ public:
     fSamples = Samples;
   }
 
+  
+  // DT5743 frequency: 
+  // 0 => 3.2GHz
+  // 1 => 1.6GHz
+  // 2 => 0.8GHz
+  // 3 => 0.4GHz
   void SetFrequency(int freq){fFreq = freq;}
   int  GetFrequency(){ return fFreq;}
 

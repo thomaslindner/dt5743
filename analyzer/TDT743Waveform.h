@@ -12,22 +12,19 @@ public:
 
   void UpdateHistograms(TDataContainer& dataContainer);
 
-  /// Getters/setters
-  int GetNsecsPerSample() { return nanosecsPerSample; }
-  void SetNanosecsPerSample(int nsecsPerSample) { this->nanosecsPerSample = nsecsPerSample; }
-
-	// Reset the histograms; needed before we re-fill each histo.
-	void Reset();
-
+  // Reset the histograms; needed before we re-fill each histo.
+  void Reset();
+  
   void CreateHistograms();
-
-	/// Take actions at begin run
-	void BeginRun(int transition,int run,int time){		
-		CreateHistograms();		
-	}
+  
+  /// Take actions at begin run
+  void BeginRun(int transition,int run,int time){		
+    CreateHistograms();		
+  }
 
 private:
-  int nanosecsPerSample;
+
+  int FrequencySetting;
 };
 
 #endif

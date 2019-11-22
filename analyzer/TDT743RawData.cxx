@@ -31,7 +31,7 @@ TDT743RawData::TDT743RawData(int bklen, int bktype, const char* name, void *pdat
   }
   
   int nwords_per_group = (GetEventSize() - 4)/number_available_groups;
-  std::cout << "Words per group : " << nwords_per_group << " " 
+  if(0)std::cout << "Words per group : " << nwords_per_group << " " 
 	    << number_available_groups << std::endl;
 
   // Loop over groups
@@ -77,8 +77,8 @@ TDT743RawData::TDT743RawData(int bklen, int bktype, const char* name, void *pdat
       meas1.AddSamples(Samples1);
       fMeasurements.push_back(meas1);
       
-      std::cout << freq << " " << hit0 << " " << hit1 
-		<< " " << time0 << " " << time1 << std::endl;
+      if(0)std::cout << freq << " " << hit0 << " " << hit1 
+		     << " " << time0 << " " << time1 << std::endl;
       //for(int i = 0; i < Samples0.size(); i++) std::cout << std::hex << Samples0[i] <<std::dec << std::endl; 
     }
   }

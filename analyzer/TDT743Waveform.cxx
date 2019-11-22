@@ -11,7 +11,7 @@ TDT743Waveform::TDT743Waveform(){
   SetUpdateOnlyWhenPlotted(true);
   
   CreateHistograms();
-
+  FrequencySetting = -1;
 }
 
 
@@ -24,7 +24,7 @@ void TDT743Waveform::CreateHistograms(){
   TH1D *tmp = (TH1D*)gDirectory->Get(tname);
   if (tmp) return;
 
-  int fWFLength = 200; // Need a better way of detecting this...
+  int fWFLength = 7; // Need a better way of detecting this...
   int numSamples = fWFLength / 1;
   
   // Otherwise make histograms
@@ -45,7 +45,7 @@ void TDT743Waveform::CreateHistograms(){
     push_back(tmp);
   }
   std::cout << "TDT743Waveform done init...... " << std::endl;
-  
+  FrequencySetting = -1;
 }
 
 
@@ -60,20 +60,37 @@ void TDT743Waveform::UpdateHistograms(TDataContainer& dataContainer){
     
     
     std::vector<RawChannelMeasurement> measurements = dt743->GetMeasurements();
-    
-    // Need to change timebase and number of samples!!!
 
+    bool changeHistogram = false; 
     for(int i = 0; i < measurements.size(); i++){
-      
+           
       int chan = measurements[i].GetChannel();
+      int nsamples = measurements[i].GetNSamples();
+
+      // Check if we need to change timebase and number of samples using first channel.
+      if(i == 0){
+	if(FrequencySetting == -1 or FrequencySetting != measurements[i].GetFrequency()
+	   or nsamples != GetHistogram(chan)->GetNbinsX()){
+	  std::cout << "New setting for histogram : " << FrequencySetting << " " << measurements[i].GetFrequency()
+		    << " " << nsamples << " " << GetHistogram(chan)->GetNbinsX() << std::endl;
+	  changeHistogram = true;
+	  FrequencySetting = measurements[i].GetFrequency();
+	}  	  
+      }
       
-      
-      // Reset the histogram...
-      for(int ib = 0; ib < GetHistogram(chan)->GetNbinsX(); ib++)
-	GetHistogram(chan)->SetBinContent(ib+1,0);
+      // Update the histogram
+      if(changeHistogram){
+	float ns_per_bin = 0;
+	if(FrequencySetting == 0) ns_per_bin = 0.3125;
+	else if(FrequencySetting == 1) ns_per_bin = 0.625;
+	else if(FrequencySetting == 2) ns_per_bin = 1.25;
+	else if(FrequencySetting == 3) ns_per_bin = 2.5;
+	GetHistogram(chan)->Reset();
+	GetHistogram(chan)->SetBins(nsamples, 0, nsamples*ns_per_bin);
+      }
       
       //std::cout << "Nsamples " <<  measurements[i].GetNSamples() << std::endl;
-      for(int ib = 0; ib < measurements[i].GetNSamples(); ib++){
+      for(int ib = 0; ib < nsamples; ib++){
 	GetHistogram(chan)->SetBinContent(ib+1, measurements[i].GetSample(ib));
       }
       
