@@ -349,16 +349,6 @@ INT initialize_for_run(){
   
   //ret |= CAEN_DGTZ_WriteRegister(handle,0x1084,1);
   
-  uint32_t testdata;
-  CAEN_DGTZ_ReadRegister(handle,0xEF00,&testdata);
-  printf("Block Bit %x\n",testdata);
-  //testdata = testdata+0x20;
-  //testdata = 0x0;
-  //CAEN_DGTZ_WriteRegister(handle,0xEF00,testdata);
-  
-  
-  sleep(1);
-  
   // Only want to allocate memory once
   static int allocatedBufferMemory = 0;
   
