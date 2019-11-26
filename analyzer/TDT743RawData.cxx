@@ -59,11 +59,15 @@ TDT743RawData::TDT743RawData(int bklen, int bktype, const char* name, void *pdat
 	if(i == 8) time1 += (GetData32()[counter] & 0xff000000) >> 16;
 	if(i == 9) freq  = (GetData32()[counter] & 0xff000000) >> 24;
       
-	// Get Samples
-	uint32_t sample = (GetData32()[counter] & 0xfff);
-	Samples0.push_back(sample);
-	sample = (GetData32()[counter] & 0xfff000) >> 12;
-	Samples1.push_back(sample);				
+	// Get Samples (skip 17th sample)
+	if(i%17 != 0){
+	  uint32_t sample = (GetData32()[counter] & 0xfff);
+	  Samples0.push_back(sample);
+	  sample = (GetData32()[counter] & 0xfff000) >> 12;
+	  Samples1.push_back(sample);				
+	}
+
+	// increment pointer
 	counter++;
       }
       RawChannelMeasurement meas0 = RawChannelMeasurement(gr*2);

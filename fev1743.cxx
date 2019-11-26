@@ -1,13 +1,13 @@
 /********************************************************************\
 
-Frontend program for getting waveforms from CAEN DT5724,
-100MHz, 14bit digitizer.
+Frontend program for getting waveforms from CAEN DT5743
+Using SAMLONG SCA chip
 
 We make calls to the CAEN digitizer library routines in order to 
 setup the digitizer.  So this frontend requires the CAENDigitizer
 libraries be installed.
 
-T. Lindner, Dec 2014
+T. Lindner, Dec 2019
 
   $Id$
 \********************************************************************/
@@ -279,7 +279,8 @@ INT initialize_for_run(){
   
   // Set digitizer length	
   //ret = CAEN_DGTZ_SetRecordLength(handle, tsvc[module].record_length);
-  //if(ret != 0) printf("Error setting record length: %i %i\n",ret,tsvc[module].record_length);
+  ret = CAEN_DGTZ_SetRecordLength(handle, 300);
+  if(ret != 0) printf("Error setting record length: %i %i\n",ret,300);
 
   // Set post trigger
   ret = CAEN_DGTZ_SetSAMPostTriggerSize(handle, 0, tsvc[module].post_trigger[0]);
@@ -290,8 +291,9 @@ INT initialize_for_run(){
   ret = CAEN_DGTZ_SetSAMSamplingFrequency(handle, tsvc[module].frequency);
   if(ret != 0) printf("Error setting frequency: %i\n",ret);
   
-  // Other sampling parameters
+  // Other SAMLONG digitizatoin parameters
   ret = CAEN_DGTZ_SetSAMCorrectionLevel(handle, CAEN_DGTZ_SAM_CORRECTION_ALL);
+  //ret = CAEN_DGTZ_SetSAMCorrectionLevel(handle, CAEN_DGTZ_SAM_CORRECTION_DISABLED);
   if(ret != 0) printf("Error setting CorLevel: %i\n",ret);
   ret = CAEN_DGTZ_LoadSAMCorrectionData(handle);
   if(ret != 0) printf("Error setting Correction Data: %i\n",ret);
