@@ -277,11 +277,14 @@ INT initialize_for_run(){
   if ((status = db_get_record (hDB, hSet[module], &tsvc[module], &size, 0)) != DB_SUCCESS)
     return status;
   
-  // Set digitizer length	
-  //ret = CAEN_DGTZ_SetRecordLength(handle, tsvc[module].record_length);
-  ret = CAEN_DGTZ_SetRecordLength(handle, 300);
-  if(ret != 0) printf("Error setting record length: %i %i\n",ret,300);
-
+  // Set digitizer length; length must be > 64 and length%16 == 0
+  if(tsvc[module].record_length % 16 == 0 && tsvc[module].record_length > 64 && 
+     tsvc[module].record_length <= 1024  ){    
+    ret = CAEN_DGTZ_SetRecordLength(handle, tsvc[module].record_length);
+    if(ret != 0) printf("Error setting record length: %i %i\n",ret,tsvc[module].record_length);
+  }else{
+    cm_msg(MERROR, "initialize", "Record length of %i is invalid.  Must be %16 == 0 and > 64 and <= 1024",tsvc[module].record_length );
+  }
   // Set post trigger
   ret = CAEN_DGTZ_SetSAMPostTriggerSize(handle, 0, tsvc[module].post_trigger[0]);
   ret = CAEN_DGTZ_SetSAMPostTriggerSize(handle, 1, tsvc[module].post_trigger[1]);
