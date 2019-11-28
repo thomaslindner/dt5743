@@ -288,6 +288,8 @@ INT initialize_for_run(){
   // Set post trigger
   ret = CAEN_DGTZ_SetSAMPostTriggerSize(handle, 0, tsvc[module].post_trigger[0]);
   ret = CAEN_DGTZ_SetSAMPostTriggerSize(handle, 1, tsvc[module].post_trigger[1]);
+  ret = CAEN_DGTZ_SetSAMPostTriggerSize(handle, 2, tsvc[module].post_trigger[2]);
+  ret = CAEN_DGTZ_SetSAMPostTriggerSize(handle, 3, tsvc[module].post_trigger[3]);
   if(ret != 0) printf("Error setting post trigger: %i %i %i \n",ret,tsvc[module].post_trigger[0],tsvc[module].post_trigger[1]);
 
   // Set Sampling frequency

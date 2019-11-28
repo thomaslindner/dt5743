@@ -22,27 +22,29 @@ typedef struct {
   DWORD       record_length;
   DWORD     trigger_source;         // 0x810C@[31.. 0]
   DWORD     sw_trigger; 
-  DWORD     post_trigger[2];           // 0x8114@[31.. 0]
+  DWORD     post_trigger[4];           // 0x8114@[31.. 0]
   DWORD     dac[8];                 // 0x1n98@[15.. 0]
 } DT5743_CONFIG_SETTINGS;
 
 #define DT5743_CONFIG_SETTINGS_STR(_name) const char *_name[] = {\
 "frequency = DWORD : 0",\
 "group mask = DWORD : 3",\
-"record length = DWORD : 500",\
+"record length = DWORD : 512",\
 "trigger source = DWORD : 0xffffffff",\         
 "software trigger = DWORD : 0",\         
-"post trigger = DWORD[2] : ",\
-"[0] 200",\
-"[1] 200",\
+"post trigger = DWORD[4] : ",\
+"[0] 20",\
+"[1] 20",\
+"[2] 20",\
+"[3] 20",\
 "dac = DWORD[8] : ",\
-"[0] 0x7FFF",\
-"[1] 0x7FFF",\
-"[2] 0x7FFF",\
-"[3] 0x7FFF",\
-"[4] 0x7FFF",\
-"[5] 0x7FFF",\
-"[6] 0x7FFF",\
-"[7] 0x7FFF",\
+"[0] 0x400",\
+"[1] 0x400",\
+"[2] 0x400",\
+"[3] 0x400",\
+"[4] 0x400",\
+"[5] 0x400",\
+"[6] 0x400",\
+"[7] 0x400",\
 NULL }
 #endif  //  ODBDT5743_INCLUDE_H
