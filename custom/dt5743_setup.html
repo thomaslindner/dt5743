@@ -1,0 +1,87 @@
+!DOCTYPE html>
+<html class="mcss">
+<head>
+   <meta charset="UTF-8">
+   <link rel="stylesheet" href="midas.css">
+   <script src="controls.js"></script>
+   <script src="midas.js"></script>
+   <script src="mhttpd.js"></script>
+   <title>DT5743 Setup</title>
+
+   <style>
+      .mtable td { padding: 10px; }
+   </style>
+
+</head>
+
+<body class="mcss" onload="mhttpd_init('DT5743 Setup');;">
+
+<!-- header and side navigation will be filled in mhttpd_init -->
+<div id="mheader"></div>
+<div id="msidenav"></div>
+
+<div id="mmain">
+
+  <table class="mtable">
+    <tr>
+      <th colspan="2" class="mtableheader">DT5743 Board Setup</th>
+    </tr>
+    <tr>
+      <td>
+        Frequency<br/>
+        <small>
+	  0 => 3.2GHz
+        </small><br/>
+        <small>
+	  1 => 1.6GHz
+        </small><br/>
+        <small>
+	  2 => 0.8GHz
+        </small><br/>
+        <small>
+	  3 => 0.4GHz
+        </small><br/>
+        </div>
+      </td>
+      <td>
+        <div class="modbvalue" data-odb-editable="1" data-odb-path="/Equipment/DT5743/Settings/DT5743/frequency" ></div> 
+      </td>
+    </tr>
+    <tr>
+      <td>
+        Number Samples <br>
+	<small> must be %16 == 0, > 64, <=1024 </small>
+      </td>
+       <td >       
+        <div class="modbvalue" data-odb-editable="1" data-odb-path="/Equipment/DT5743/Settings/DT5743/record length" ></div> 
+      </td>
+    </tr>
+    <tr>
+      <td>
+        Post Trigger (2 groups?) <br>
+      </td>
+       <td >       
+        <div class="modbvalue" data-odb-editable="1" data-odb-path="/Equipment/DT5743/Settings/DT5743/post trigger[0]" ></div> 
+        <div class="modbvalue" data-odb-editable="1" data-odb-path="/Equipment/DT5743/Settings/DT5743/post trigger[1]" ></div> 
+      </td>
+    </tr>
+    <tr>
+      <td>
+        Pedestal DAC (8 channels) <br>
+      </td>
+       <td >       
+        <div class="modbvalue" data-odb-editable="1" data-odb-path="/Equipment/DT5743/Settings/DT5743/dac[0]" ></div> <br>
+        <div class="modbvalue" data-odb-editable="1" data-odb-path="/Equipment/DT5743/Settings/DT5743/dac[1]" ></div> <br>
+        <div class="modbvalue" data-odb-editable="1" data-odb-path="/Equipment/DT5743/Settings/DT5743/dac[2]" ></div> <br>
+        <div class="modbvalue" data-odb-editable="1" data-odb-path="/Equipment/DT5743/Settings/DT5743/dac[3]" ></div> <br>
+        <div class="modbvalue" data-odb-editable="1" data-odb-path="/Equipment/DT5743/Settings/DT5743/dac[4]" ></div> <br>
+        <div class="modbvalue" data-odb-editable="1" data-odb-path="/Equipment/DT5743/Settings/DT5743/dac[5]" ></div> <br>
+        <div class="modbvalue" data-odb-editable="1" data-odb-path="/Equipment/DT5743/Settings/DT5743/dac[6]" ></div> <br>
+        <div class="modbvalue" data-odb-editable="1" data-odb-path="/Equipment/DT5743/Settings/DT5743/dac[7]" ></div> <br>
+      </td>
+    </tr>
+
+  </table>
+
+</body>
+</html>
