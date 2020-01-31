@@ -8,6 +8,10 @@ sys.path.append("/Users/lindner/packages/midas/python")
 #import midas
 import midas.file_reader
 
+# HDF5
+import h5py
+
+
 # Open our file
 mfile = midas.file_reader.MidasFile("/Users/lindner/sample_data/mpmt/run00028sub000.mid.gz")
 
@@ -27,7 +31,7 @@ while event:
                                                                           type(bank.data[0]).__name__))
 
 
-            # Decode DT5743 bank (move this to separate python class eventually
+        # Decode DT5743 bank (move this to separate python class eventually
         if bank_name == "43FS":
 
             grp_mask = (bank.data[3] & 0xff);
@@ -40,6 +44,9 @@ while event:
             print("%x %x %x %x %x %x" % (bank.data[2],bank.data[3],bank.data[4],bank.data[5],
                                          bank.data[6],bank.data[7]))
 
+            # Do some simple decoding...
+            group_mask = (bank.data[3] & 0xff) + ((bank.data[4] & 0xff000000) >> 16);
+            
 
         
     event = mfile.read_next_event()
