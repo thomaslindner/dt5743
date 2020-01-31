@@ -46,6 +46,19 @@ while event:
 
             # Do some simple decoding...
             group_mask = (bank.data[3] & 0xff) + ((bank.data[4] & 0xff000000) >> 16);
+
+            # try to get samples for first and second channel
+            samples_chan0 = [];
+            samples_chan1 = [];
+            for i in range(0, num_sample_per_group-1):
+                if i % 17 != 0:  # skip bogus data in every 17th sample.
+                    samples_chan0.append((bank.data[6+i] & 0xfff))
+                    samples_chan1.append(((bank.data[6+i] & 0xfff000) >> 12))
+            print "Channel 0 samples:"
+            print samples_chan0
+            print "Channel 1 samples:"
+            print samples_chan1
+            
             
 
         
