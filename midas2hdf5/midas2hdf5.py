@@ -4,16 +4,21 @@
 # Dec 2019
 #
 import sys
-sys.path.append("/Users/lindner/packages/midas/python")
+#sys.path.append("/Users/lindner/packages/midas/python")
+sys.path.append("/home/mpmttest/packages/midas/python")
 #import midas
 import midas.file_reader
 
 # HDF5
 import h5py
 
+import sys
+
+filename = sys.argv[1]
+
 
 # Open our file
-mfile = midas.file_reader.MidasFile("/Users/lindner/sample_data/mpmt/run00028sub000.mid.gz")
+mfile = midas.file_reader.MidasFile(filename)
 
 event = mfile.read_next_event()
 
