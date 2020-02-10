@@ -49,7 +49,8 @@ while event:
             print("The first entry in bank %s is %x length: %i %s" % (bank_name, bank.data[0],len(bank.data),
                                                                           type(bank.data[0]).__name__))
 
-        dest=a_TDT743_decoder(bank.data) # a_TDT743_decoder decodes data and returns a np array
+        bank_array=a_TDT743_decoder(bank.data) # a_TDT743_decoder decodes data and returns a np array
+        dset=grp.create_dataset(bank_name, (100,), data=bank_array)
 
 
     event = mfile.read_next_event()
