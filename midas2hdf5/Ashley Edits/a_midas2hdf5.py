@@ -16,6 +16,7 @@ import numpy as np
 import h5py
 import midas.file_reader
 import a_TDT743_decoder
+import datetime
 
 #sys.path.append("/Users/lindner/packages/midas/python")
 sys.path.append("/home/mpmttest/packages/midas/python")
@@ -45,6 +46,12 @@ while event:
         bank_array=a_TDT743_decoder.a_TDT743_Decoder(bank.data, bank_name) # a_TDT743_decoder decodes data and returns a np array
         dset=grp.create_dataset(bank_name, bank_array.shape, data=bank_array)
 
+        # add relevant metadata (attributes)
+        dset.attrs["temp"]=getTemp() #develop functions
+        dest.attrs["time stamp"]=datetime.datetime.now() 
+        dset.attrs["laser settings"]=getLaser()
+        dset.attrs["name"]=bank_name
+        
         if i==0:
             i=1
             print("The first entry in bank %s is %x length: %i %s" % (bank_name, bank.data[0],len(bank.data),
