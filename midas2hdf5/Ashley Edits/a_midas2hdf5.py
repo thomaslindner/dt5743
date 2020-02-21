@@ -28,11 +28,11 @@ mfile = midas.file_reader.MidasFile(filename)
 event = mfile.read_next_event()
 
 # Create an .hdf5 file, and open it for writting
-f_hdf5=h5py.File("testfile1.hdf5","w")
+f_hdf5=h5py.File("".join(date.today(),"ScanEvents.hdf5"),"w")
 
 # We can simply iterate over all events in the file
 while event:
-    # Create a groups to store information of each event
+    # Create groups to store information of each event
     grp=f_hdf5.create_group("Event #",event.header.serial_number)
 
     bank_names = ", ".join(b.name for b in event.banks.values())
@@ -42,15 +42,15 @@ while event:
     for bank_name, bank in event.banks.items():
         # Create a data set (numpy array)
         # we will then fill this array using the decoder functiojn
-        dset=grp.create_dataset(bank_name, (100,), dtype='i')
+        bank_array=a_TDT743_decoder.a_TDT743_Decoder(bank.data, bank_name) # a_TDT743_decoder decodes data and returns a np array
+        dset=grp.create_dataset(bank_name, bank_array.shape, data=bank_array)
 
         if i==0:
             i=1
             print("The first entry in bank %s is %x length: %i %s" % (bank_name, bank.data[0],len(bank.data),
                                                                           type(bank.data[0]).__name__))
 
-        bank_array=a_TDT743_decoder(bank.data) # a_TDT743_decoder decodes data and returns a np array
-        dset=grp.create_dataset(bank_name, (100,), data=bank_array)
-
 
     event = mfile.read_next_event()
+
+f_hdf5.close()
