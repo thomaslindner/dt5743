@@ -4,76 +4,77 @@
 #
 # Edits made by Ashley Ferreira, Feb 2020
 
-class TDT743_decoder(data):
+# VERY MUICH NOT DONE
+
+
+import numpy as np
+
+
+class TDT743_decoder:
     '''
-    decodes data from digitizer
+    decodes data from digitizer # add more detail to comments
     '''
-    def __init__(self, data):
-        self.data=data
+    def __init__(self, all_data, bank_name):
+        self.data=all_data
+        self.name=bank_name
+
 
     def TDT743_decoder(self):
-        if self.data[2] != 0xa0000000:
-            return "".join("First word has wrong identifier; first word = 0x", data[2])
+        '''
+        a_TDT743_decoder decodes data and returns a np array # more
+        '''
+        important_bank=False
+        decoded_arr=[]
+
+        if self.data[0] != 0xa0000000: # memrory address? why does this have to be the first word? well its the identifier? just zero?
+            print("First word has wrong identifier; first word = 0x", data[0])
+            return important_bank, None, None, None, None
 
         # Decode DT5743 bank
         if bank_name == "43FS":
+            important_bank=True
 
-            grp_mask = (self.data[3] & 0xff)
+            # bring this up out of here, its not specific to "43FS"
+            #
+            # which one is the correct way of getting it? cpp just uses "GetChMask()"
+            # grp_mask = (self.data[3] & 0xff)
+            # group_mask = (self.data[3] & 0xff) + ((self.data[4] & 0xff000000) >> 16)
+            #
+            # just tried my way for now, confirm its .data[3]
+            group_mask= int(self.data[3],2)
 
             number_groups = 0
-            for i in range(16):
-                if ((a<<ch)&GetChMask()): # findout how to do this bitwise operator stuff in python
+            msk_str=str(self.data[3])
+            for i in range(len(msk_str)):
+                if msk_str[i]=="1":
                     number_groups+=1
 
-            #number_groups = 2  # do this calculation correctly, what is number groups?
-            num_sample_per_group = (len(self.data) - 6)/ number_groups # 4 instead of 6 in cpp code
-
+            num_sample_per_group = (len(self.data) - 6)/ number_groups # 4 instead of 6 in cpp code,  header -> 4 words
 
             print("grp mask: %x sample_per_group %i " % (grp_mask,num_sample_per_group))
 
             print("%x %x %x %x %x %x" % (self.data[2],self.data[3],self.data[4],self.data[5],
                                          self.data[6],self.data[7]))
 
-            for i in range(number_groups):
-                if ((self.data[i] & 0xfff000) != 0xaa000000):
-                    print("Bad first word for group: 0x",self.data[i])
-                if((1<<i)&GetChMask()):
-                    # try to get samples for first and second channel
-                    samples_chan0 = [];
-                    samples_chan1 = [];
-                    for i in range(0, num_sample_per_group-1):
-                        if i % 17 != 0:  # skip bogus data in every 17th sample.
-                            samples_chan0.append((self.data[6+i] & 0xfff))
-                            samples_chan1.append(((self.data[6+i] & 0xfff000) >> 12))
-                    print("Channel 0 samples:")
-                    print(samples_chan0)
-                    print("Channel 1 samples:")
-                    print(samples_chan1)
 
-                #get extra info sphere
+            if group_mask == 3: # expand/generalize this later, once you start using more inputs
+                print("group_mask = 0x3, this means group 0 and 1 are participating (channel 0 and 1 are taking input)")
 
-'''
-still need to intergrate the following
-'''
+            # try to get samples for first and second channel
+            samples_chan0 = []
+            samples_chan1 = []
+            for i in range(0, num_sample_per_group-1):
+                if i % 17 != 0:  # skip bogus data in every 17th sample.
+                    samples_chan0.append((bank.data[6+i] & 0xfff))
+                    samples_chan1.append(((bank.data[6+i] & 0xfff000) >> 12))
+            print("Channel 0 samples:", samples_chan0)
+            print("Channel 1 samples:", samples_chan1)
 
-                RawChannelMeasurement meas0 = RawChannelMeasurement(gr*2);
-                  meas0.AddSamples(Samples0);
-                  meas0.SetFrequency(freq);
-                  meas0.SetHitCounter(hit0);
-                  meas0.SetTimeCounter(time0);
-                  fMeasurements.push_back(meas0);
+            decoded_arr.append(samples_chan0,simples_chan1)
 
-                  RawChannelMeasurement meas1 = RawChannelMeasurement(gr*2+1);
-                  meas1.AddSamples(Samples1);
-                  fMeasurements.push_back(meas1);
+            decoded_arr=np.array(decoded_arr)
 
-                  if(0)std::cout << freq << " " << hit0 << " " << hit1
-            		     << " " << time0 << " " << time1 << std::endl;
+            return important_bank, decoded_arr, number_groups, num_sample_per_group, group_mask
 
-
-                    # Do some simple decoding...
-                    group_mask = (self.data[3] & 0xff) + ((self.data[4] & 0xff000000) >> 16);
-
-
-
-        return decoded #still have yet to define this part
+        # will return this if bank_name=/="43FS"
+        return important_bank, None, None, None, None
