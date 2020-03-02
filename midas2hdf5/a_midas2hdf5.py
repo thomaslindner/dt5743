@@ -36,7 +36,7 @@ mfile = midas.file_reader.MidasFile(filename)
 event = mfile.read_next_event()
 
 # Create an .hdf5 file, and open it for writting
-f_hdf5=h5py.File("".join(date.today(),"ScanEvents.hdf5"),"w")
+f_hdf5=h5py.File("".join([date.today(),"ScanEvents.hdf5"]),"w")
 
 # We can simply iterate over all events in the file
 while event:
