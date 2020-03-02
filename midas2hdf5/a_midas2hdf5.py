@@ -22,7 +22,7 @@ import sys
 import numpy as np
 import h5py
 import a_TDT743_decoder
-import datetime
+from datetime import date
 
 #sys.path.append("/Users/lindner/packages/midas/python")
 sys.path.append("/home/mpmttest/packages/midas/python")
