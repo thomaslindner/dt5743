@@ -21,12 +21,12 @@
 import sys
 import numpy as np
 import h5py
-import midas.file_reader
 import a_TDT743_decoder
 import datetime
 
 #sys.path.append("/Users/lindner/packages/midas/python")
 sys.path.append("/home/mpmttest/packages/midas/python")
+import midas.file_reader
 
 filename = sys.argv[1]
 
