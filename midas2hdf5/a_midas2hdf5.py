@@ -41,8 +41,8 @@ f_hdf5=h5py.File("".join([str(date.today()),"ScanEvents.hdf5"]),"w")
 # We can simply iterate over all events in the file
 while event:
     # Create groups to store information of each event
-    grp=f_hdf5.create_group("".join(["Event #",str(event.header.serial_number)])
-
+    grp=f_hdf5.create_group("".join(["Event #",str(event.header.serial_number)]))
+#backet wasnt closed above, this may have been syntax issue below
     #this was "invid syntax" bank_names = ", ".join(b.name for b in event.banks.values())
     #print("Event # %s of type ID %s contains banks %s" % (event.header.serial_number,event.header.event_id, bank_names))
     grp.attrs["id"]=event.header.event_id
