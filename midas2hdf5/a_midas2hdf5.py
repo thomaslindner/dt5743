@@ -43,12 +43,12 @@ while event:
     # Create groups to store information of each event
     grp=f_hdf5.create_group("".join(["Event #",str(event.header.serial_number)])
 
-    bank_names = ", ".join(b.name for b in event.banks.values())
+    #this was "invid syntax" bank_names = ", ".join(b.name for b in event.banks.values())
     print("Event # %s of type ID %s contains banks %s" % (event.header.serial_number,
                                                           event.header.event_id, bank_names))
     grp.attrs["id"]=event.header.event_id
-    grp.attrs["bank names"]=bank_names
-    grp.attrs["number of banks"]=len(bank_names)
+    #grp.attrs["bank names"]=bank_names
+    #grp.attrs["number of banks"]=len(bank_names)
     grp.attrs["event time tag"]=0 #take from header
 
     hit_first=False
