@@ -44,8 +44,7 @@ while event:
     grp=f_hdf5.create_group("".join(["Event #",str(event.header.serial_number)])
 
     #this was "invid syntax" bank_names = ", ".join(b.name for b in event.banks.values())
-    print("Event # %s of type ID %s contains banks %s" % (event.header.serial_number,
-                                                          event.header.event_id, bank_names))
+    #print("Event # %s of type ID %s contains banks %s" % (event.header.serial_number,event.header.event_id, bank_names))
     grp.attrs["id"]=event.header.event_id
     #grp.attrs["bank names"]=bank_names
     #grp.attrs["number of banks"]=len(bank_names)
@@ -56,12 +55,12 @@ while event:
         # print first entry in the bank info
         if hit_first==False:
             hit_first=True
-            print("The first entry in bank %s is %x length: %i %s" % (bank_name, bank.data[0],len(bank.data),
-                                                                          type(bank.data[0]).__name__))
+            #print("The first entry in bank %s is %x length: %i %s" % (bank_name, bank.data[0],len(bank.data),type(bank.data[0]).__name__))
 
         # a_TDT743_decoder decodes data and returns a np array, along with other useful info
         # bank_array[1] = pmt analogue data, bank_array[0] = monitor pmt
         # ?what channels are currently plugged into digitizer?
+        bank_name="test name"
         important_bank, bank_array, number_groups, num_sample_per_group, group_mask =a_TDT743_decoder.a_TDT743_Decoder(bank.data, bank_name)
 
         # Create a data set (numpy array) for all important banks
