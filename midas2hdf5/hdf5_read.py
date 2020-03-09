@@ -50,7 +50,7 @@ class hdf5_read:
         for group in groups:
             for data_set_name in group.keys():
                 data_set=group[data_set_name].value
-                min_pulses.append(np.min(data_set[0]))
+                min_pulses.append(np.min(data_set))
 
         print(min_pulses)# right now they are all .0, once you fix this it all should work
 
