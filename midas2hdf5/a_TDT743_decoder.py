@@ -4,8 +4,6 @@
 #
 # Edits made by Ashley Ferreira, Feb 2020
 
-# VERY MUICH NOT DONE
-
 
 import numpy as np
 
@@ -19,7 +17,7 @@ class TDT743_decoder:
         self.name=bank_name
 
 
-    def TDT743_decoder(self):
+    def decoder(self):
         '''
         a_TDT743_decoder decodes data and returns a np array # more
         '''
