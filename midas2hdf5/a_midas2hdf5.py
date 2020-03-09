@@ -63,7 +63,7 @@ while event:
             print("The first entry in bank %s is %x length: %i %s" % (bank_name, bank.data[0],len(bank.data),type(bank.data[0]).__name__))
 
         # a_TDT743_decoder decodes data and returns a np array, along with other useful info
-        # bank_array[1] = pmt analogue data, bank_array[0] = monitor pmt
+        # bank_array[1] = pmt analogue data, bank_array[0] = monitor pmt (CURRENTLY JUST PMT)
         # ?what channels are currently plugged into digitizer?
         #bank_name="test name"
 
