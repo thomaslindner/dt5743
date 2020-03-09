@@ -4,6 +4,7 @@
 #
 # Edits made by Ashley Ferreira, Feb 2020
 
+# chaged so it only gives you indiv pmt right Now
 
 import numpy as np
 
@@ -60,16 +61,16 @@ class a_TDT743_decoder:
 
             # try to get samples for first and second channel
             samples_chan0 = []
-            samples_chan1 = []
+            #samples_chan1 = []
             for i in range(0, num_sample_per_group-1):
                 if i % 17 != 0:  # skip bogus data in every 17th sample.
                     samples_chan0.append(self.data[6+i]) #& 0xfff))
-                    samples_chan1.append(((self.data[6+i] & 0xfff000) >> 12)) #this 12 part is invalid syntax i think but only on cmd line (just bracket)
-            print("Channel 0 samples:", samples_chan0)
+                    #samples_chan1.append(((self.data[6+i] & 0xfff000) >> 12)) #this 12 part is invalid syntax i think but only on cmd line (just bracket)
+            #print("Channel 0 samples:", samples_chan0)
             #ch1 just doesnt matter for this first test, so its filled with not correct info (no)
-            print("Channel 1 samples:", samples_chan1)
+            #print("Channel 1 samples:", samples_chan1)
 
-            decoded_arr.append([samples_chan0,samples_chan1])#these look like very promising numbers
+            decoded_arr.append(samples_chan0)#samples_chan1])#these look like very promising numbers
 
             decoded_arr=np.array(decoded_arr).astype(np.float)
 
