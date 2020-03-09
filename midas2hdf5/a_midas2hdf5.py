@@ -21,7 +21,9 @@
 import sys
 import numpy as np
 import h5py
-import a_TDT743_decoder
+
+sys.path.append("/home/mpmttest/online/dt5743/midas2hdf5")
+import a_TDT743_decoder#.a_TDT743_decoder
 from datetime import date
 
 #sys.path.append("/Users/lindner/packages/midas/python")
@@ -61,7 +63,10 @@ while event:
         # bank_array[1] = pmt analogue data, bank_array[0] = monitor pmt
         # ?what channels are currently plugged into digitizer?
         bank_name="test name"
-        important_bank, bank_array, number_groups, num_sample_per_group, group_mask =a_TDT743_decoder.decoder(bank.data, bank_name)
+
+        #initilize it first
+        file_todecode==a_TDT743_decoder(bank.data, bank_name)
+        important_bank, bank_array, number_groups, num_sample_per_group, group_mask =file_todecode.decoder()
 
         # Create a data set (numpy array) for all important banks
         # we will then fill this array using the decoder function variables
