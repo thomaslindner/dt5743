@@ -8,7 +8,7 @@
 import numpy as np
 
 
-class TDT743_decoder:
+class a_TDT743_decoder:
     '''
     decodes data from digitizer # add more detail to comments
     '''
