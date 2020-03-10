@@ -2,6 +2,83 @@
 # Ashley Ferreira
 # March 2020
 
+# hdf5 file reader for mpmt test stand digitizer data
+# Ashley Ferreira
+# March 2020
+
+
+import numpy as np
+import h5py
+from datetime import date
+#import matplotlib.pyplot as plt
+
+
+class hdf5_read:
+    '''
+    reads hdf5 file created by a_midas2hdf5.py and interprets digitizer data
+    '''
+    def __init__(self, hdf5_file_name):
+        self.file_name=hdf5_file_name
+        #self.bank_array=#you need to open groups, you need to decide on structure
+        #self.monitor_pmt=data_array[0]#you need to put this into other code
+        #`self.individual_pmt=data_array[1]
+        #loop to get vals before close
+
+    def min_vals_histo(self,bins):
+        '''
+        makes historgram of dark pulses
+
+        this is a rough thing
+        def return_name(name):
+            print(name)
+            return name
+            #this is one way of iterating, but it goes through all trees
+        groups.visit(return_name)
+        '''
+        hdf5_file=h5py.File(''.join([self.file_name, '.hdf5']), 'r') # you may specify file driver
+        min_pulses=[]
+        #the file is already well oragnized iterate through to get mins in dset for indic pmt
+        #for group_name in self.hdf5_file:
+
+        #    for data_set in group_name:
+
+        #        min_pulses.append(min(data_set[0])) #are the numbers pure y vals? get indesxing right
+# whern you are reading in you are reading in as a string?
+
+        keys=hdf5_file.keys()
+        groups=[]
+        for key in keys:
+            groups.append(hdf5_file[key])
+
+        dataset_keys=[]
+        for group in groups:
+            for data_set_name in group.keys():
+                if data_set_name=="ch0":
+                    data_set=group[data_set_name].value
+                    min_pulses.append(np.min(data_set))
+
+        print(min_pulses)# right now they are all .0, once you fix this it all should work
+
+
+        hdf5_file.close()
+        #####plt.ioff()
+        #plt.hist(min_pulses, bins)
+        #plt.yscale('log')
+        #####plt.show()
+        #plt.savefig('histogram1.png')
+        ####return min_pulses
+
+    def temp_vs_min():
+        '''
+        plots temperature versus pmt data
+        '''
+        # get sc info into varibale and then into attrs and now retrieve
+
+
+test=hdf5_read("".join([str(date.today()),"ScanEvents"])) # make sure this is reading from the right spot
+#program to have it take this from sys (cmd) once this is working
+# test this with just basics working for now
+test.min_vals_histo(100)
 
 import numpy as np
 import h5py
