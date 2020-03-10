@@ -55,7 +55,7 @@ class a_TDT743_decoder:
                                          self.data[6],self.data[7]))
 
 
-            if group_mask == 3: # expand/generalize this later, once you start using more inputs
+            #if group_mask == 3: # expand/generalize this later, once you start using more inputs
                 #print("group_mask = 0x3, this means group 0 and 1 are participating (channel 0 and 1 are taking input)")
 
             # try to get samples for first and second channel
