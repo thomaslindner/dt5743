@@ -2,7 +2,7 @@
 # Ashley Ferreira
 # March 2020
 
-
+import sys
 import numpy as np
 import h5py
 from datetime import date, datetime
@@ -57,8 +57,9 @@ class hdf5_read:
         '''
         return None
 
+writename=sys.arg[1]
 
-test=hdf5_read("".join([str(datetime.now()),"ScanEvents"]))
+test=hdf5_read("".join([writename,"ScanEvents"]))
 # program to have it take this from sys once this is working
 # test this with just basics working for now
 test.min_vals_histo(100)
