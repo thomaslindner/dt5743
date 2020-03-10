@@ -72,8 +72,8 @@ class a_TDT743_decoder:
             #decoded_arr.append(samples_chan0)#samples_chan1])#these look like very promising numbers
             #decoded_arr=np.array(decoded_arr).astype(np.float)
 
-            ch0_arr=np.array(samples_chan0).astype(np.float)
-            ch1_arr=np.array(samples_chan1).astype(np.float)
+            ch0_arr=np.array(samples_chan0)#.astype(np.float)
+            ch1_arr=np.array(samples_chan1)#.astype(np.float)
 
             return important_bank, ch0_arr, ch1_arr, number_groups, num_sample_per_group, group_mask
 
