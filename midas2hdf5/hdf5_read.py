@@ -47,9 +47,9 @@ class hdf5_read:
 
 
         hdf5_file.close()
-        #plt.hist(min_pulses, bins)
-        #plt.yscale('log')
-        #plt.savefig('histogram1.png')
+        plt.hist(min_pulses, bins)
+        plt.yscale('log')
+        plt.savefig('histogram1.png')
 
     def temp_vs_min():
         '''
