@@ -33,6 +33,7 @@ sys.path.append("/home/mpmttest/packages/midas/python")
 import midas.file_reader
 
 filename = sys.argv[1]
+writename = sys.argv[2]
 
 # Open our file
 mfile = midas.file_reader.MidasFile(filename)
@@ -40,7 +41,8 @@ mfile = midas.file_reader.MidasFile(filename)
 event = mfile.read_next_event()
 
 # Create an .hdf5 file, and open it for writting
-f_hdf5=h5py.File("".join([str(datetime.now()),"ScanEvents.hdf5"]),"w")
+#f_hdf5=h5py.File("".join([str(datetime.now()),"ScanEvents.hdf5"]),"w")
+f_hdf5=h5py.File("".join([writename,"ScanEvents.hdf5"]),"w")
 
 counter=0
 # We can simply iterate over all events in the file
