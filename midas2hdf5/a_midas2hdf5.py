@@ -69,7 +69,7 @@ while event:
 
         #initilize it first
         file_todecode=a_TDT743_decoder.a_TDT743_decoder(bank.data, bank_name)
-        important_bank, bank_array, number_groups, num_sample_per_group, group_mask=file_todecode.decoder()
+        important_bank, ch0_arr, ch1_arr, number_groups, num_sample_per_group, group_mask=file_todecode.decoder()
 
         # make decoder function work but for now just print here
         # this just does on forgever print(bank_array)
@@ -77,7 +77,9 @@ while event:
         # Create a data set (numpy array) for all important banks
         # we will then fill this array using the decoder function variables
         if important_bank==True:
-            dset=grp.create_dataset(bank_name, bank_array.shape, data=bank_array)
+            dset=grp.create_dataset("ch0", ch0_arr.shape, data=ch0_arr)
+            dset=grp.create_dataset("ch1", ch1_arr.shape, data=ch1_arr)
+            #dset=grp.create_dataset(bank_name, bank_array.shape, data=bank_array)
             # add relevant metadata (attributes)
             #dset.attrs["temp"]=getTemp()
             #dest.attrs["time stamp"]=datetime.datetime.now() # change to midas
