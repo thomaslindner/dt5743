@@ -30,6 +30,11 @@ class a_TDT743_decoder:
         #    print("First word has wrong identifier; first word = 0x", self.data[0])
         #    return important_bank, None, None, None, None, None
 
+        if self.name == "TEMP":
+            important_bank=True
+            # or no return as metadata? directly in the other one
+            # yeah for now this is handled in midas2hdf5
+
         # Decode DT5743 bank
         if self.name == "43FS":
             important_bank=True
@@ -39,7 +44,7 @@ class a_TDT743_decoder:
             # group_mask = (self.data[3] & 0xff) + ((self.data[4] & 0xff000000) >> 16)
             #
             # just tried my way for now, confirm its .data[3]
-            group_mask= 3#int(str(self.data[3]),2)
+            group_mask=3#int(str(self.data[3]),2)
 
             number_groups = 0
             msk_str=str(self.data[3])
