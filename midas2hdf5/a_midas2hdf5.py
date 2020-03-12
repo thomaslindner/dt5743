@@ -76,7 +76,8 @@ while event:
 
         # Create a data set (numpy array) for all important banks
         # we will then fill this array using the decoder function variables
-        if important_bank==True:
+        if bank_name=="43FS":
+        #if important_bank==True:
             # a_TDT743_decoder decodes data and returns a np array, along with other useful info
             # bank_array[1] = pmt analogue data, bank_array[0] = monitor pmt (CURRENTLY JUST PMT at ch0 and seperate arrays)
             file_todecode=a_TDT743_decoder.a_TDT743_decoder(bank.data, bank_name)
@@ -90,7 +91,7 @@ while event:
             dset.attrs["number of groups"]=number_groups # will help with slicing
             dset.attrs["samples per group"]=num_sample_per_group # will help with slicing
             dset.attrs["group mask"]=group_mask
-            dset.attrs["temp"]=latest_temp
+            dset.attrs["temp"]=latest_temp #split into the 5
             #dest.attrs["time stamp"]=datetime.datetime.now() # change to midas
             #dset.attrs["laser settings"]=getLaser()
 
