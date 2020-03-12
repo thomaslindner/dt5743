@@ -7,8 +7,8 @@ import numpy as np
 import h5py
 from datetime import date, datetime
 
-import matplotlib
-matplotlib.use('Agg')
+#import matplotlib
+#matplotlib.use('Agg')
 
 import matplotlib.pyplot as plt
 
