@@ -44,6 +44,7 @@ event = mfile.read_next_event()
 #f_hdf5=h5py.File("".join([str(datetime.now()),"ScanEvents.hdf5"]),"w")
 f_hdf5=h5py.File("".join([writename,"ScanEvents.hdf5"]),"w")
 
+latest_temp=0
 counter=0
 # We can simply iterate over all events in the file
 while event:
@@ -68,17 +69,19 @@ while event:
             hit_first=True
             #print("The first entry in bank %s is %x length: %i %s" % (bank_name, bank.data[0],len(bank.data),type(bank.data[0]).__name__))
 
-        # a_TDT743_decoder decodes data and returns a np array, along with other useful info
-        # bank_array[1] = pmt analogue data, bank_array[0] = monitor pmt (CURRENTLY JUST PMT at ch0 and seperate arrays)
+        # case statements for the different bank names?
 
-        file_todecode=a_TDT743_decoder.a_TDT743_decoder(bank.data, bank_name)
-        important_bank, ch0_arr, ch1_arr, number_groups, num_sample_per_group, group_mask=file_todecode.decoder()
-
+        if bank_name=="TEMP":#you will have had to create the dataset fist, but temp would come fitst?
+            lastest_temp=bank.data #ask what is in this bank format wise?
 
         # Create a data set (numpy array) for all important banks
         # we will then fill this array using the decoder function variables
         if important_bank==True:
-            dset=grp.create_dataset("ch0", ch0_arr.shape, data=ch0_arr)
+            # a_TDT743_decoder decodes data and returns a np array, along with other useful info
+            # bank_array[1] = pmt analogue data, bank_array[0] = monitor pmt (CURRENTLY JUST PMT at ch0 and seperate arrays)
+            file_todecode=a_TDT743_decoder.a_TDT743_decoder(bank.data, bank_name)
+            important_bank, ch0_arr, ch1_arr, number_groups, num_sample_per_group, group_mask=file_todecode.decoder()
+            dset=grp.create_dataset("ch0", ch0_arr.shape, data=ch0_arr)#specificy names based on decoders response
             dset=grp.create_dataset("ch1", ch1_arr.shape, data=ch1_arr)
             #dset=grp.create_dataset(bank_name, bank_array.shape, data=bank_array)
 
@@ -87,7 +90,7 @@ while event:
             dset.attrs["number of groups"]=number_groups # will help with slicing
             dset.attrs["samples per group"]=num_sample_per_group # will help with slicing
             dset.attrs["group mask"]=group_mask
-            #dset.attrs["temp"]=getTemp()
+            dset.attrs["temp"]=latest_temp
             #dest.attrs["time stamp"]=datetime.datetime.now() # change to midas
             #dset.attrs["laser settings"]=getLaser()
 
