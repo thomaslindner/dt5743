@@ -82,5 +82,5 @@ class a_TDT743_decoder:
 
             return important_bank, ch0_arr, ch1_arr, number_groups, num_sample_per_group, group_mask
 
-        # will return this if bank_name=/="43FS"
+        # will return this if bank_name=/="43FS
         return important_bank, None, None, None, None, None
