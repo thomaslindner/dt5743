@@ -9,14 +9,7 @@
 #
 # Writes to .hdf5 in the following way:
 # group=event / dataset=bank
-# event #/bin of data
 
-
-# still left to do:
-# set SL data to global variables to store in metadata
-# add temperature, motor settings, [etc...] as metadata
-# update time using MIDAS and event time tag
-# store channels in different dataset/array format?
 
 # print statements commented out for now so code goes faster in cmd
 
@@ -28,70 +21,71 @@ sys.path.append("/home/mpmttest/online/dt5743/midas2hdf5")
 import a_TDT743_decoder
 from datetime import date, datetime
 
-#sys.path.append("/Users/lindner/packages/midas/python")
+
 sys.path.append("/home/mpmttest/packages/midas/python")
 import midas.file_reader
 
+# call this python file in cmd as follows:
+# python a_midas2hdf5 ~/online/data/run_____sub000.mid.gz "run___"
+# fill in the blanks with run number from MIDAS
 filename = sys.argv[1]
 writename = sys.argv[2]
 
-# Open our file
+# Open MIDAS file
 mfile = midas.file_reader.MidasFile(filename)
 
 event = mfile.read_next_event()
 
 # Create an .hdf5 file, and open it for writting
-#f_hdf5=h5py.File("".join([str(datetime.now()),"ScanEvents.hdf5"]),"w")
 f_hdf5=h5py.File("".join([writename,"ScanEvents.hdf5"]),"w")
+#f_hdf5=h5py.File("".join([str(datetime.now()),"ScanEvents.hdf5"]),"w")
 
 latest_temp=0
 counter=0
-# We can simply iterate over all events in the file
+
+# Iterate over all events in MIDAS file
+# as we read each event, we write it to our .hfd5 file
 while event:
-    # Create groups to store information of each event
+    # Create hdf5 groups to store information of each event
     #grp=f_hdf5.create_group("".join(["Event #",str(event.header.serial_number)]))
     counter+=1
-    grp=f_hdf5.create_group("".join(["Event #",str(counter)])) #temporary way
+    grp=f_hdf5.create_group("".join(["Event #",str(counter)]))
 
     bank_names = ", ".join(b.name for b in event.banks.values())
     #print("Event # %s of type ID %s contains banks %s" % (event.header.serial_number,event.header.event_id, bank_names))
 
-    # add relevant metadata to group (attributes)
+    # add relevant metadata to hdf5 group (attributes)
     grp.attrs["id"]=event.header.event_id
     grp.attrs["bank names"]=bank_names
     grp.attrs["number of banks"]=len(bank_names)
-    grp.attrs["event time tag"]=0 #take from header
+    grp.attrs["event time tag"]=0 #take from header -> look at midas documentation now
 
     hit_first=False
     for bank_name, bank in event.banks.items():
-        # print first entry in the bank info
+        # print first entry in the bank
         if hit_first==False:
             hit_first=True
-            #print("The first entry in bank %s is %x length: %i %s" % (bank_name, bank.data[0],len(bank.data),type(bank.data[0]).__name__))
+            print("The first entry in bank %s is %x length: %i %s"
+                % (bank_name, bank.data[0],len(bank.data),type(bank.data[0]).__name__))
 
-        # case statements for the different bank names?
+        if bank_name=="TEMP":
+            lastest_temp=bank.data
 
-        if bank_name=="TEMP":#you will have had to create the dataset fist, but temp would come fitst?
-            lastest_temp=bank.data #ask what is in this bank format wise?
-
-        # Create a data set (numpy array) for all important banks
-        # we will then fill this array using the decoder function variables
         if bank_name=="43FS":
-        #if important_bank==True:
-            # a_TDT743_decoder decodes data and returns a np array, along with other useful info
-            # bank_array[1] = pmt analogue data, bank_array[0] = monitor pmt (CURRENTLY JUST PMT at ch0 and seperate arrays)
             file_todecode=a_TDT743_decoder.a_TDT743_decoder(bank.data, bank_name)
-            important_bank, ch0_arr, ch1_arr, number_groups, num_sample_per_group, group_mask=file_todecode.decoder()
-            dset=grp.create_dataset("ch0", ch0_arr.shape, data=ch0_arr)#specificy names based on decoders response
-            dset=grp.create_dataset("ch1", ch1_arr.shape, data=ch1_arr)
-            #dset=grp.create_dataset(bank_name, bank_array.shape, data=bank_array)
+
+            important_bank, ch0_arr, ch1_arr, number_groups,
+                num_sample_per_group, group_mask=file_todecode.decoder()
+
+            dset=grp.create_dataset("ch0", ch0_arr.shape, data=ch0_arr)
+            #dset=grp.create_dataset("ch1", ch1_arr.shape, data=ch1_arr)
 
             # add relevant metadata to data set (attributes)
             dset.attrs["name"]=bank_name
             dset.attrs["number of groups"]=number_groups # will help with slicing
             dset.attrs["samples per group"]=num_sample_per_group # will help with slicing
             dset.attrs["group mask"]=group_mask
-            dset.attrs["temp"]=latest_temp #split into the 5
+            dset.attrs["temp"]=latest_temp
             #dest.attrs["time stamp"]=datetime.datetime.now() # change to midas
             #dset.attrs["laser settings"]=getLaser()
 
