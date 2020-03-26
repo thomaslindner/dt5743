@@ -7,14 +7,15 @@ import numpy as np
 import h5py
 from datetime import date, datetime
 
-#import matplotlib
-#matplotlib.use('Agg')
+import matplotlib
+matplotlib.use('Agg')
 
 import matplotlib.pyplot as plt
 
 
 class hdf5_read:
     '''
+    after you call a_midas2hdf5.py to save MIDAS data 
     reads hdf5 file created by a_midas2hdf5.py and interprets digitizer data
     '''
     def __init__(self, hdf5_file_name):
@@ -24,7 +25,7 @@ class hdf5_read:
         #self.individual_pmt=data_array[1]
         #loop to get vals before close, bring reading part up here
 
-    def min_vals_histo(self,bins,title):
+    def min_vals_histo(self):
         '''
         makes historgram of pulses
         '''
@@ -51,17 +52,17 @@ class hdf5_read:
 
 
         hdf5_file.close()
-        plt.hist(min_pulses, bins)
+        plt.hist(min_pulses, bin_num)#directly input bin num to get rid of the error
         plt.yscale('log')
         plt.xlabel('Waveform Minimum Value (ADC)')
         plt.ylabel('Frequency')
-        plt.title(title)
-        plt.savefig(title)
+        plt.title(self.file_name)
+        plt.savefig(self.file_name)
 
     def temp_vs_min(self,title):
         '''
         plots temperature of 5 sensors versus pmt data
-        '''
+
         hdf5_file=h5py.File(''.join([self.file_name, '.hdf5']), 'r')
         min_pulses=[]
 
@@ -79,11 +80,11 @@ class hdf5_read:
         dataset_keys=[]
         for group in groups:
             for data_set_name in group.keys():
-                if data_set_name=="ch0":#add reading onto it, check metadata here and add to lsit for same length
+                if data_set_name=="ch0":
                     data_set=group[data_set_name].value
                     min_pulses.append(np.min(data_set))
-                    #read metadata below
-                    data_set["temp"]=all_temp
+                    #read in temperature vals
+                    all_temp=data_set["temp"]
                     temp1.append(all_temp[0])
                     temp2.append(all_temp[1])
                     temp3.append(all_temp[2])
@@ -101,16 +102,17 @@ class hdf5_read:
         plt.ylabel('Waveform Minimum Value (ADC)')
         plt.title('Min PMT Pulse Val vs. Temp for ',title)
         plt.savefig(title)#this won't change but try it to see bugs
-
+        '''
+        return None
 
 
 
 writename=sys.argv[1]
-plot_title=sys.argv[2]
-bins=sys.argv[3]
+#plot_title=sys.argv[2]
+#bins=sys.argv[3]
 
 test=hdf5_read("".join([writename,"ScanEvents"]))
 # program to have it take this from sys once this is working
 # test this with just basics working for now
-test.min_vals_histo(bins,plot_title)
-test.temp_vs_min(plot_title)
+test.min_vals_histo()
+#test.temp_vs_min(plot_title)
