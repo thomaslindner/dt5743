@@ -40,7 +40,8 @@ event = mfile.read_next_event()
 f_hdf5=h5py.File("".join([writename,"ScanEvents.hdf5"]),"w")
 #f_hdf5=h5py.File("".join([str(datetime.now()),"ScanEvents.hdf5"]),"w")
 
-latest_temp=0
+latest_temp=0 #or a list?
+#latest_pos=0 or set it to a list?
 counter=0
 
 # Iterate over all events in MIDAS file
@@ -61,6 +62,8 @@ while event:
     grp.attrs["event time tag"]=0 #take from header -> look at midas documentation now
 
     hit_first=False
+    latest_pos=0
+    latest_temp=0
     for bank_name, bank in event.banks.items():
         # print first entry in the bank
         if hit_first==False:
@@ -72,8 +75,11 @@ while event:
             lastest_temp=bank.data
 
         if bank_name=="SCAN":
-            lastest_pos=bank.data
+            latest_pos=bank.data
             print(latest_pos)
+
+        #if bank_name=="43SL":
+
 
         if bank_name=="43FS":
             file_todecode=a_TDT743_decoder.a_TDT743_decoder(bank.data, bank_name)
