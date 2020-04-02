@@ -71,11 +71,14 @@ while event:
         if bank_name=="TEMP":
             lastest_temp=bank.data
 
+        if bank_name=="SCAN":
+            lastest_pos=bank.data
+            print(latest_pos)
+
         if bank_name=="43FS":
             file_todecode=a_TDT743_decoder.a_TDT743_decoder(bank.data, bank_name)
 
-            important_bank, ch0_arr, ch1_arr, number_groups,
-                num_sample_per_group, group_mask=file_todecode.decoder()
+            important_bank, ch0_arr, ch1_arr, number_groups, num_sample_per_group, group_mask=file_todecode.decoder()
 
             dset=grp.create_dataset("ch0", ch0_arr.shape, data=ch0_arr)
             #dset=grp.create_dataset("ch1", ch1_arr.shape, data=ch1_arr)
@@ -86,6 +89,7 @@ while event:
             dset.attrs["samples per group"]=num_sample_per_group # will help with slicing
             dset.attrs["group mask"]=group_mask
             dset.attrs["temp"]=latest_temp
+            dest.attrs["position"]=latest_pos #will be a pixilated scan
             #dest.attrs["time stamp"]=datetime.datetime.now() # change to midas
             #dset.attrs["laser settings"]=getLaser()
 
