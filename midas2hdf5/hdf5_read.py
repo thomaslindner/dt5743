@@ -52,7 +52,7 @@ class hdf5_read:
         #change to pick bin numbers automatically
 
         hdf5_file.close()
-        plt.hist(min_pulses, bin_num)#directly input bin num to get rid of the error
+        plt.hist(min_pulses, 100)#directly input bin num to get rid of the error
         plt.yscale('log')
         plt.xlabel('Waveform Minimum Value (ADC)')
         plt.ylabel('Frequency')
@@ -112,7 +112,7 @@ class hdf5_read:
         point in MIDAS test stand scan
         '''
         hdf5_file=h5py.File(''.join([self.file_name, '.hdf5']), 'r')
-        min_pulses=[] # check if min pulse is bigger than histo val
+        min_pulses=[]
 
         keys=hdf5_file.keys()
         groups=[]
@@ -124,76 +124,43 @@ class hdf5_read:
         x_pos=[]
         y_pos=[]
         old_position=-1
-        colletive=[]
+        collective=[]
         temp_lst=[]
         for group in groups:
             for data_set_name in group.keys():
                 if data_set_name=="ch0":
                     data_set=group[data_set_name].value
-                    min_pulses.append(np.min(data_set))
+                    dset=group[data_set_name]
+                    min_pulses.append(np.min(data_set)) #up until here works for sure
 
                     #read in SCAN vals
-                    position=data_set["position"]
-                    scan_vals.append(position)
-                    index=position[1]
-                    x_pos.append(index//10)
-                    y_pos.append(index%10)
+                    pos=dset.attrs["position"] #potential issue with reading it
+                    scan_vals.append(pos)
 
-                    if positon == old_position:
+                    if pos == old_pos #its saying they arent equal but all -1?
                         temp_lst.append(np.min(data_set))
 
                     else:
+                        x_pos.append(old_pos//10)
+                        y_pos.append(old_pos%10)
                         collective.append([old_position,temp_lst])
                         temp_lst=[]
                         temp_lst.append(np.min(data_set))
 
-                    position=old_position
+                old_pos=pos
 
-# non repeating list for pos, [0] makes xlist, [1] makes y list
-# do you need to make non repeating? yeah to figure out how many at each positon
-# just figure out how many also
-        #pos_list=list(dict.fromkeys(scan_vals))
-
-        # calculate detection efficiency for each scan point
-#make deff a list?
-        #filter out repeat positons?
-        #for pos in pos_list:
-            #pulses=
-
-#easiest way to do the bottom part is have an dictonary with pos and then vals?
-#make a list of min pulses for each scan spot
         d_eff_list=[]
         for i in range(len(collective)):
-            loc=collective[i][0]#or is it the other way around?
+            loc=collective[i][0]#or is it the other way around? you just want the 1 and zero but you need a list of the collectives?
             pulse_list=collective[i][1]
             hits=0
-            numof_pulses=len(pulse_list)
-            for pulse in pulse_list:
-                if min_pulses[i]>2345: #make this dynamic later on
+            numof_pulses=len(pulse_list) #this is giving zero?
+            for pulse in pulse_list: #you arent iterating through the pulses here
+                if pulse<2345: #make this dynamic later on
                     hits+=1
             d_eff=hits/numof_pulses #per event!
             d_eff_list.append(d_eff)
 
-
-        #for pos in pos_list:
-        #    while scan_vals[i]==scan_vals[i-1]:
-        #        i+=1
-        #these numbers need to be per event
-            #    numof_pulses=len(min_pulses)
-            #    hits=0
-            #    for i in range(numof_pulses-1):#not working rn
-            #        if min_pulses[i]>2345: #make this dynamic later on
-            #            hits+=1
-
-            #    d_eff=hits/numof_pulses #per event!
-            #d_eff_list.append(d_eff)
-
-
-        # then give one point and devide by number of events at that point in the scan
-        # you need to add a part of the decode which has the scan values?
-
-        #print(min_pulses)#lots more noise and round numbers than usual?
-        #change to pick bin numbers automatically
 
         hdf5_file.close()
 
@@ -215,7 +182,6 @@ writename=sys.argv[1]
 #bins=sys.argv[3]
 
 test=hdf5_read("".join([writename,"ScanEvents"]))
-# program to have it take this from sys once this is working
-# test this with just basics working for now
-test.min_vals_histo()
+#test.min_vals_histo()
+test.full_scan()
 #test.temp_vs_min(plot_title)
