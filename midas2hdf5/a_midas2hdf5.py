@@ -75,7 +75,7 @@ while event:
             lastest_temp=bank.data
 
         if bank_name=="SCAN":
-            latest_pos=bank.data
+            latest_pos=float(bank.data[1])
             print(latest_pos)
 
         #if bank_name=="43SL":
@@ -95,7 +95,7 @@ while event:
             dset.attrs["samples per group"]=num_sample_per_group # will help with slicing
             dset.attrs["group mask"]=group_mask
             dset.attrs["temp"]=latest_temp
-            dest.attrs["position"]=latest_pos #will be a pixilated scan
+            dset.attrs["position"]=latest_pos #will be a pixilated scan
             #dest.attrs["time stamp"]=datetime.datetime.now() # change to midas
             #dset.attrs["laser settings"]=getLaser()
 
