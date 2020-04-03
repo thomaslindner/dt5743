@@ -58,7 +58,7 @@ class a_TDT743_decoder:
             #print("grp mask: %x sample_per_group %i " % (group_mask,num_sample_per_group))
 
             #print("%x %x %x %x %x %x" % (self.data[2],self.data[3],self.data[4],self.data[5],
-                                         self.data[6],self.data[7]))
+                                         #self.data[6],self.data[7]))
 
 
             #if group_mask == 3: # expand/generalize this later, once you start using more inputs
