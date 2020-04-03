@@ -137,7 +137,8 @@ class hdf5_read:
                     k=list(dset.attrs.keys())
                     v=list(dset.attrs.values())
                     print(k)
-                    ind=index(k,"position")
+                    print(v)
+                    ind=k.index("position")
                     pos=v[ind]
                     #pos=dset.attrs["position"] #ISSUE retriving pos
                     print("pos:",pos)
@@ -157,10 +158,10 @@ class hdf5_read:
 
         d_eff_list=[]
         print(collective,"was collective")
-        for i in range(len(collective)):
+        for i in range(len(collective)-1):
             print("collective item:",collective[i])
-            loc=collective[i][0]#or is it the other way around? you just want the 1 and zero but you need a list of the collectives?
-            pulse_list=collective[i][1]
+            loc=collective[i+1][0]#or is it the other way around? you just want the 1 and zero but you need a list of the collectives?
+            pulse_list=collective[i+1][1]
             hits=0
             numof_pulses=len(pulse_list) #this is giving zero?
             print(numof_pulses,"shouldnt be zero, but code thinks it is")
@@ -171,15 +172,20 @@ class hdf5_read:
             d_eff=hits/numof_pulses #per event!
             d_eff_list.append(d_eff)
 
-
+#collective item prints wrong but the individual parts are right
         hdf5_file.close()
 
+        arr = []
+
+        for i in range(len(x_pos)):
+            arr.append([x_pos[i],y_pos[i],d_eff_list[i]])
+
+        X = np.array(arr, dtype=np.float64)
         #a=np.array(x_pos,y_pos,d_eff_list) #maybe do store scan point only once?
-        X = [x_pos,y_pos,d_eff_list]
-        plt.imshow(X, cmap='hot', interpolation='nearest')
+        #X = [x_pos,y_pos,d_eff_list]
+        plt.imshow(np.real(X), cmap='hot', interpolation='nearest')
         plt.colorbar()
         #plt.imshow()#directly input bin num to get rid of the error
-
         plt.xlabel('X positon [m]')
         plt.ylabel('Y positon [m]')
         plt.title(''.join([self.file_name,'detection efficency']))
