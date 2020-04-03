@@ -135,6 +135,7 @@ class hdf5_read:
 
                     #read in SCAN vals
                     pos=dset.attrs["position"] #potential issue with reading it
+                    print("pos:",pos)
                     scan_vals.append(pos)
 
                     if pos == old_pos: #its saying they arent equal but all -1?
@@ -152,7 +153,7 @@ class hdf5_read:
         d_eff_list=[]
         print(collective,"was collective")
         for i in range(len(collective)):
-            print("collective item:"collective[i])
+            print("collective item:",collective[i])
             loc=collective[i][0]#or is it the other way around? you just want the 1 and zero but you need a list of the collectives?
             pulse_list=collective[i][1]
             hits=0
