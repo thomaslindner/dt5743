@@ -123,7 +123,7 @@ class hdf5_read:
         scan_vals=[]
         x_pos=[]
         y_pos=[]
-        old_position=-1
+        old_pos=0
         collective=[]
         temp_lst=[]
         for group in groups:
@@ -137,25 +137,29 @@ class hdf5_read:
                     pos=dset.attrs["position"] #potential issue with reading it
                     scan_vals.append(pos)
 
-                    if pos == old_pos #its saying they arent equal but all -1?
+                    if pos == old_pos: #its saying they arent equal but all -1?
                         temp_lst.append(np.min(data_set))
 
                     else:
                         x_pos.append(old_pos//10)
                         y_pos.append(old_pos%10)
-                        collective.append([old_position,temp_lst])
+                        collective.append([old_pos,temp_lst])
                         temp_lst=[]
                         temp_lst.append(np.min(data_set))
 
                 old_pos=pos
 
         d_eff_list=[]
+        print(collective,"was collective")
         for i in range(len(collective)):
+            print("collective item:"collective[i])
             loc=collective[i][0]#or is it the other way around? you just want the 1 and zero but you need a list of the collectives?
             pulse_list=collective[i][1]
             hits=0
             numof_pulses=len(pulse_list) #this is giving zero?
+            print(numof_pulses,"shouldnt be zero, but code thinks it is")
             for pulse in pulse_list: #you arent iterating through the pulses here
+                print("pulse",pulse)
                 if pulse<2345: #make this dynamic later on
                     hits+=1
             d_eff=hits/numof_pulses #per event!
