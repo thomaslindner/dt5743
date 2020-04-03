@@ -64,6 +64,7 @@ while event:
     hit_first=False
     latest_pos=0
     latest_temp=0
+    pos=0
     for bank_name, bank in event.banks.items():
         # print first entry in the bank
         if hit_first==False:
@@ -72,11 +73,13 @@ while event:
                 % (bank_name, bank.data[0],len(bank.data),type(bank.data[0]).__name__))
 
         if bank_name=="TEMP":
-            lastest_temp=bank.data
+            latest_temp=bank.data
 
         if bank_name=="SCAN":
-            latest_pos=float(bank.data[1])
-            print(latest_pos)
+            #latest_pos=float(bank.data[1])
+            pos+=1
+            print(pos)
+            #print(latest_pos)#this num is not stored into metadata
 
         #if bank_name=="43SL":
 
@@ -95,7 +98,10 @@ while event:
             dset.attrs["samples per group"]=num_sample_per_group # will help with slicing
             dset.attrs["group mask"]=group_mask
             dset.attrs["temp"]=latest_temp
-            dset.attrs["position"]=latest_pos #will be a pixilated scan
+            print(pos)
+            #dset.attrs["position"]=latest_pos #will be a pixilated scan
+            dset.attrs["position"]=pos
+            print(dset.attrs["position"])
             #dest.attrs["time stamp"]=datetime.datetime.now() # change to midas
             #dset.attrs["laser settings"]=getLaser()
 
