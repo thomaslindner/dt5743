@@ -134,7 +134,12 @@ class hdf5_read:
                     min_pulses.append(np.min(data_set)) #up until here works for sure
 
                     #read in SCAN vals
-                    pos=dset.attrs["position"] #potential issue with reading it
+                    k=list(dset.attrs.keys())
+                    v=list(dset.attrs.values())
+                    print(k)
+                    ind=index(k,"position")
+                    pos=v[ind]
+                    #pos=dset.attrs["position"] #ISSUE retriving pos
                     print("pos:",pos)
                     scan_vals.append(pos)
 
@@ -169,8 +174,9 @@ class hdf5_read:
 
         hdf5_file.close()
 
-        a=np.array(x_pos,y_pos,d_eff_list) #maybe do store scan point only once?
-        plt.imshow(a, cmap='hot', interpolation='nearest')
+        #a=np.array(x_pos,y_pos,d_eff_list) #maybe do store scan point only once?
+        X = [x_pos,y_pos,d_eff_list]
+        plt.imshow(X, cmap='hot', interpolation='nearest')
         plt.colorbar()
         #plt.imshow()#directly input bin num to get rid of the error
 
