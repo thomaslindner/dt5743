@@ -57,7 +57,7 @@ class hdf5_read:
         plt.xlabel('Waveform Minimum Value (ADC)')
         plt.ylabel('Frequency')
         plt.title(''.join([self.file_name,'_histogram']))
-        plt.savefig(self.file_name)
+        plt.savefig(''.join([self.file_name,'_histogram']))
 
     def temp_vs_min(self,title):
         '''
@@ -220,7 +220,7 @@ class hdf5_read:
         plt.xlabel('X positon [m]')
         plt.ylabel('Y positon [m]')
         plt.title(''.join([self.file_name,' detection efficency']))
-        plt.savefig(self.file_name)
+        plt.savefig(''.join([self.file_name,' detection efficency']))
 
         #print(scan_vals)
 
@@ -232,6 +232,6 @@ writename=sys.argv[1]
 #bins=sys.argv[3]
 
 test=hdf5_read("".join([writename,"ScanEvents"]))
-#test.min_vals_histo()
+test.min_vals_histo()
 test.full_scan()
 #test.temp_vs_min(plot_title)
