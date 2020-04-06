@@ -147,14 +147,16 @@ class hdf5_read:
                     #print("pos:",pos)
                     scan_vals.append(p)
 
+        scan_vals=list(map(float, scan_vals))
+        scan_vals.sort()
 
         for pos in scan_vals:
             if pos == old_pos: #its saying they arent equal but all -1?
                 temp_lst.append(np.min(data_set))
 
             else:
-                x_pos.append(old_pos//10)
-                y_pos.append(old_pos%10)
+                x_pos.append(old_pos) #maybe adjust x and y later?
+                y_pos.append(old_pos)
                 #p+=1
                 #x_pos.append(p)
                 #y_pos.append(p)
@@ -164,6 +166,9 @@ class hdf5_read:
                 temp_lst.append(np.min(data_set))
 
             old_pos=pos
+
+        x_pos=list(map(lambda x: x//10, x_pos))
+        y_pos=list(map(lambda y: y%10, y_pos))
 
         d_eff_list=[]
         #print(collective,"was collective")
@@ -205,9 +210,12 @@ class hdf5_read:
         plt.title(''.join([self.file_name,'detection efficency']))
         plt.savefig(self.file_name)
 
+        plt.plot(x_pos, y_pos)
+        plt.savefig("test plot")
+
         #print(scan_vals)
 
-
+#sort scan vals
 
 
 writename=sys.argv[1]
