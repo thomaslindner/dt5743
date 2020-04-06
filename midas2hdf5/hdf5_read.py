@@ -133,98 +133,82 @@ class hdf5_read:
                 if data_set_name=="ch0":
                     data_set=group[data_set_name].value
                     dset=group[data_set_name]
-                    min_pulses.append(np.min(data_set)) #up until here works for sure
-
+                    min_pulses.append(np.min(data_set))
                     #read in SCAN vals
                     k=list(dset.attrs.keys())
                     v=list(dset.attrs.values())
-                    #print(k)
-                    #print(v)
                     ind=k.index("position")
                     p=v[ind]
-                    #pos+=0.5
-                    #pos=dset.attrs["position"] #ISSUE retriving pos
-                    #print("pos:",pos)
+                    #pos=dset.attrs["position"]
                     scan_vals.append(p)
 
         scan_vals=list(map(float, scan_vals))
         scan_vals.sort()
 
-        pedastal=max(min_pulses)
-        ind=min_pulses.index(pedastal)
-        min_pulses.pop(ind)
-        pe_peak=max(min_pulses)
-        cutoff=(pe_peak+pedastal)/2
+        #pedastal=max(min_pulses)
+        #ind=min_pulses.index(pedastal)
+        #min_pulses.pop(ind)
+        #pe_peak=max(min_pulses)
+        #cutoff=(pe_peak+pedastal)/2
 
+        i=0
         for pos in scan_vals:
-            if pos == old_pos: #its saying they arent equal but all -1?
-                temp_lst.append(np.min(data_set))
+            if pos == old_pos:
+                temp_lst.append(min_pulses[i])
 
             else:
-                x_pos.append(old_pos) #maybe adjust x and y later?
+                x_pos.append(old_pos)
                 y_pos.append(old_pos)
-                #p+=1
-                #x_pos.append(p)
-                #y_pos.append(p)
 
                 collective.append([old_pos,temp_lst])
                 temp_lst=[]
-                temp_lst.append(np.min(data_set))
+                temp_lst.append(min_pulses[i])
 
+            i+=1
             old_pos=pos
 
         x_pos=list(map(lambda x: x//10, x_pos))
         y_pos=list(map(lambda y: y%10, y_pos))
 
         d_eff_list=[]
-        #print(collective,"was collective")
-        for i in range(len(collective)-1):#look ovet this part
-            #print("collective item:",collective[i])
-            loc=collective[i+1][0]#or is it the other way around? you just want the 1 and zero but you need a list of the collectives?
-            pulse_list=collective[i+1][1]
+
+        for i in range(len(collective)-1):
+            loc=collective[i+1][0]
             hits=0
-            numof_pulses=len(pulse_list) #this is giving zero?
-            #print(numof_pulses,"shouldnt be zero, but code thinks it is")
-            for pulse in pulse_list: #you arent iterating through the pulses here
-                #print("pulse",pulse)
-                if pulse<cutoff: #make this dynamic later on
+            numof_pulses=len(pulse_list)
+            for pulse in pulse_list:
+                #if pulse<cutoff:
+                if pulse>2080: #temporary because of 2048 issue
                     hits+=1
-            d_eff=hits/numof_pulses #per event!
+
+            hit1=float(hits)
+            pulses=float(numof_pulses)
+            d_eff=hits1/pulses
             d_eff_list.append(d_eff)
 
-        d_eff_list.insert(0,0)#this misplaces them, make this the first one
-        #print(d_eff_list)
-#collective item prints wrong but the individual parts are right
+        d_eff_list.insert(0,0) #temporary
+
         hdf5_file.close()
 
         #arr = []
-
-        #print(x_pos)
-        #print("------------------------------------------------------------------------------")
-        #print(y_pos)
-
         #for i in range(len(x_pos)):
             #arr.append([x_pos[i],y_pos[i],d_eff_list[i]])
-
         #X = np.array(arr, dtype=np.float64)
-        #a=np.array(x_pos,y_pos,d_eff_list) #maybe do store scan point only once?
+        #a=np.array(x_pos,y_pos,d_eff_list)
         #X = [x_pos,y_pos,d_eff_list]
+
         x=np.linspace(0,10,10)
         y=np.linspace(0,10,10)
         x,y=np.meshgrid(x,y)
 
         Z=np.resize(d_eff_list,x.shape)
-        plt.imshow(Z, interpolation='nearest', extent=[0,10,0,10])#make extent dynamic later, specify cmap
+        plt.imshow(Z, cmap='hot', interpolation='nearest', extent=[0,10,0,10]) #make extent dynamic later
         plt.colorbar()
-        #plt.imshow()#directly input bin num to get rid of the error
         plt.xlabel('X positon [m]')
         plt.ylabel('Y positon [m]')
         plt.title(''.join([self.file_name,' detection efficency']))
         plt.savefig(''.join([self.file_name,' detection efficency']))
 
-        #print(scan_vals)
-
-#sort scan vals
 
 
 writename=sys.argv[1]
@@ -232,6 +216,6 @@ writename=sys.argv[1]
 #bins=sys.argv[3]
 
 test=hdf5_read("".join([writename,"ScanEvents"]))
-test.min_vals_histo()
+test.min_vals_histo() # get binning done automatically
 test.full_scan()
 #test.temp_vs_min(plot_title)
