@@ -150,6 +150,12 @@ class hdf5_read:
         scan_vals=list(map(float, scan_vals))
         scan_vals.sort()
 
+        pedastal=max(min_pulses)
+        ind=min_pulses.index(pedastal)
+        min_pulses.pop(ind)
+        pe_peak=max(min_pulses)
+        cutoff=(pe_peak+pedastal)/2
+
         for pos in scan_vals:
             if pos == old_pos: #its saying they arent equal but all -1?
                 temp_lst.append(np.min(data_set))
@@ -181,7 +187,7 @@ class hdf5_read:
             #print(numof_pulses,"shouldnt be zero, but code thinks it is")
             for pulse in pulse_list: #you arent iterating through the pulses here
                 #print("pulse",pulse)
-                if pulse<2055: #make this dynamic later on
+                if pulse<cutoff: #make this dynamic later on
                     hits+=1
             d_eff=hits/numof_pulses #per event!
             d_eff_list.append(d_eff)
@@ -208,7 +214,7 @@ class hdf5_read:
         x,y=np.meshgrid(x,y)
 
         Z=np.resize(d_eff_list,x.shape)
-        plt.imshow(X, interpolation='nearest', extent=[0,10,0,10])#make extent dynamic later, specify cmap
+        plt.imshow(Z, interpolation='nearest', extent=[0,10,0,10])#make extent dynamic later, specify cmap
         plt.colorbar()
         #plt.imshow()#directly input bin num to get rid of the error
         plt.xlabel('X positon [m]')
