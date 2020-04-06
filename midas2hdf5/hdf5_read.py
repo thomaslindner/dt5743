@@ -172,10 +172,10 @@ class hdf5_read:
 
         d_eff_list=[]
         #print(collective,"was collective")
-        for i in range(len(collective)):#look ovet this part
+        for i in range(len(collective)-1):#look ovet this part
             #print("collective item:",collective[i])
-            loc=collective[i][0]#or is it the other way around? you just want the 1 and zero but you need a list of the collectives?
-            pulse_list=collective[i][1]
+            loc=collective[i+1][0]#or is it the other way around? you just want the 1 and zero but you need a list of the collectives?
+            pulse_list=collective[i+1][1]
             hits=0
             numof_pulses=len(pulse_list) #this is giving zero?
             #print(numof_pulses,"shouldnt be zero, but code thinks it is")
@@ -186,33 +186,35 @@ class hdf5_read:
             d_eff=hits/numof_pulses #per event!
             d_eff_list.append(d_eff)
 
-        #d_eff_list.append(0)
-        print(d_eff_list)
+        d_eff_list.insert(0,0)#this misplaces them, make this the first one
+        #print(d_eff_list)
 #collective item prints wrong but the individual parts are right
         hdf5_file.close()
 
-        arr = []
+        #arr = []
 
         #print(x_pos)
         #print("------------------------------------------------------------------------------")
         #print(y_pos)
 
-        for i in range(len(x_pos)):
-            arr.append([x_pos[i],y_pos[i],d_eff_list[i]])
+        #for i in range(len(x_pos)):
+            #arr.append([x_pos[i],y_pos[i],d_eff_list[i]])
 
-        X = np.array(arr, dtype=np.float64)
+        #X = np.array(arr, dtype=np.float64)
         #a=np.array(x_pos,y_pos,d_eff_list) #maybe do store scan point only once?
         #X = [x_pos,y_pos,d_eff_list]
-        plt.imshow(X, cmap='hot', interpolation='nearest')
+        x=np.linspace(0,10,10)
+        y=np.linspace(0,10,10)
+        x,y=np.meshgrid(x,y)
+
+        Z=np.resize(d_eff_list,x.shape)
+        plt.imshow(X, interpolation='nearest', extent=[0,10,0,10])#make extent dynamic later, specify cmap
         plt.colorbar()
         #plt.imshow()#directly input bin num to get rid of the error
         plt.xlabel('X positon [m]')
         plt.ylabel('Y positon [m]')
         plt.title(''.join([self.file_name,' detection efficency']))
         plt.savefig(self.file_name)
-
-        plt.plot(x_pos, y_pos, "go")
-        plt.savefig("test plot")
 
         #print(scan_vals)
 
