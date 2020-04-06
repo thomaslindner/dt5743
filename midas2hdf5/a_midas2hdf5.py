@@ -44,6 +44,10 @@ latest_temp=0 #or a list?
 #latest_pos=0 or set it to a list?
 counter=0
 
+latest_pos=0
+latest_temp=0
+pos=0
+
 # Iterate over all events in MIDAS file
 # as we read each event, we write it to our .hfd5 file
 while event:
@@ -62,9 +66,6 @@ while event:
     grp.attrs["event time tag"]=0 #take from header -> look at midas documentation now
 
     hit_first=False
-    latest_pos=0
-    latest_temp=0
-    pos=0
     for bank_name, bank in event.banks.items():
         # print first entry in the bank
         if hit_first==False:
@@ -76,9 +77,9 @@ while event:
             latest_temp=bank.data
 
         if bank_name=="SCAN":
-            #latest_pos=float(bank.data[1])
-            pos+=1
-            print(pos)
+            latest_pos=float(bank.data[1])
+            #pos+=1
+            #print(pos)
             #print(latest_pos)#this num is not stored into metadata
 
         #if bank_name=="43SL":
@@ -98,9 +99,9 @@ while event:
             dset.attrs["samples per group"]=num_sample_per_group # will help with slicing
             dset.attrs["group mask"]=group_mask
             dset.attrs["temp"]=latest_temp
-            print(pos)
+            #print(latest_pos)
             #dset.attrs["position"]=latest_pos #will be a pixilated scan
-            dset.attrs["position"]=pos
+            dset.attrs["position"]=latest_pos
             print(dset.attrs["position"])
             #dest.attrs["time stamp"]=datetime.datetime.now() # change to midas
             #dset.attrs["laser settings"]=getLaser()
