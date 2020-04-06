@@ -181,7 +181,7 @@ class hdf5_read:
             #print(numof_pulses,"shouldnt be zero, but code thinks it is")
             for pulse in pulse_list: #you arent iterating through the pulses here
                 #print("pulse",pulse)
-                if pulse<2345: #make this dynamic later on
+                if pulse<2055: #make this dynamic later on
                     hits+=1
             d_eff=hits/numof_pulses #per event!
             d_eff_list.append(d_eff)
