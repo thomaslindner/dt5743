@@ -1,11 +1,11 @@
 # hdf5 file reader for mpmt test stand digitizer data
+# includes varius functions for plotting the data
 # Ashley Ferreira
 # March 2020
 
 import sys
 import numpy as np
 import h5py
-from datetime import date, datetime
 
 import matplotlib
 matplotlib.use('Agg')
@@ -29,7 +29,7 @@ class hdf5_read:
         '''
         makes historgram of pulses
         '''
-        hdf5_file=h5py.File(''.join([self.file_name, '.hdf5']), 'r') # you may specify file driver
+        hdf5_file=h5py.File(''.join([self.file_name, 'ScanEvents', '.hdf5']), 'r') # you may specify file driver
         min_pulses=[]
 
         #for group_name in self.hdf5_file:
@@ -52,18 +52,21 @@ class hdf5_read:
         #change to pick bin numbers automatically
 
         hdf5_file.close()
-        plt.hist(min_pulses, 100)#directly input bin num to get rid of the error
+        #make binning automatic, do you need the underscore?
+        y_hist, x_hist, _ = plt.hist(min_pulses, 100)#directly input bin num to get rid of the error
         plt.yscale('log')
         plt.xlabel('Waveform Minimum Value (ADC)')
         plt.ylabel('Frequency')
-        plt.title(''.join([self.file_name,'_histogram']))
+        plt.title(''.join([self.file_name,' histogram']))
         plt.savefig(''.join([self.file_name,'_histogram']))
+
+        return x_hist, y_hist, min_pulses
 
     def temp_vs_min(self,title):
         '''
         plots temperature of 5 sensors versus pmt data
 
-        hdf5_file=h5py.File(''.join([self.file_name, '.hdf5']), 'r')
+        hdf5_file=h5py.File(''.join([self.file_name, 'ScanEvents', '.hdf5']), 'r')
         min_pulses=[]
 
         temp1=[]
@@ -111,84 +114,129 @@ class hdf5_read:
         creates a heat map of detection efficiency for every
         point in MIDAS test stand scan
         '''
-        hdf5_file=h5py.File(''.join([self.file_name, '.hdf5']), 'r')
-        min_pulses=[]
 
-        keys=hdf5_file.keys()
-        groups=[]
-        for key in keys:
-            groups.append(hdf5_file[key])
-
-        dataset_keys=[]
-        scan_vals=[]
-        x_pos=[]
-        y_pos=[]
-        old_pos=0
-        p=0
-        #pos=0
-        collective=[]
-        temp_lst=[]
-        for group in groups:
-            for data_set_name in group.keys():
-                if data_set_name=="ch0":
-                    data_set=group[data_set_name].value
-                    dset=group[data_set_name]
-                    min_pulses.append(np.min(data_set))
-                    #read in SCAN vals
-                    k=list(dset.attrs.keys())
-                    v=list(dset.attrs.values())
-                    ind=k.index("position")
-                    p=v[ind]
-                    #pos=dset.attrs["position"]
-                    scan_vals.append(p)
-
-        scan_vals=list(map(float, scan_vals))
-        scan_vals.sort()
-
-        #pedastal=max(min_pulses)
-        #ind=min_pulses.index(pedastal)
-        #min_pulses.pop(ind)
-        #pe_peak=max(min_pulses)
-        #cutoff=(pe_peak+pedastal)/2
-
-        i=0
-        for pos in scan_vals:
-            if pos == old_pos:
-                temp_lst.append(min_pulses[i])
-
+        def calc_cutoff():
+            pedastal=max(y_hist)
+            ind=y_hist.index(pedastal)
+            pe_peak=y_hist.pop(ind)
+            #define local functions for much of this stuff
+            #is smaller actually correct here?
+            if without_ped>pedastal*0.95: #make this less arbirtrary, curve fit?
+                cutoff=(pedastal+without_ped)/2
             else:
-                x_pos.append(old_pos)
-                y_pos.append(old_pos)
+                #find new cutoff
+                ind=y_hist.index(without_ped)
+                pe_peak=y_hist.pop(ind) #loop this?
 
-                collective.append([old_pos,temp_lst])
-                temp_lst=[]
-                temp_lst.append(min_pulses[i])
+            calc_cutoff=(pedastal+pe_peak)/2
 
-            i+=1
-            old_pos=pos
+            return calc_cutoff
 
-        x_pos=list(map(lambda x: x//10, x_pos))
-        y_pos=list(map(lambda y: y%10, y_pos))
 
-        d_eff_list=[]
+        def position_vals():
+            keys=hdf5_file.keys()
+            groups=[]
+            for key in keys:
+                groups.append(hdf5_file[key])
 
-        for i in range(len(collective)-1):
-            loc=collective[i+1][0]
-            hits=0
-            numof_pulses=len(pulse_list)
-            for pulse in pulse_list:
-                #if pulse<cutoff:
-                if pulse>2080: #temporary because of 2048 issue
-                    hits+=1
+            dataset_keys=[]
+            scan_vals=[]
+            x_pos=[]
+            y_pos=[]
+            old_pos=0
+            p=0
+            #pos=0
+            collective=[]
+            temp_lst=[]
+            for group in groups:
+                for data_set_name in group.keys():
+                    if data_set_name=="ch0":
+                        data_set=group[data_set_name].value
+                        dset=group[data_set_name]
+                        #min_pulses.append(np.min(data_set))
+                        #read in SCAN vals
+                        k=list(dset.attrs.keys())
+                        v=list(dset.attrs.values())
+                        ind=k.index("position")
+                        p=v[ind]
+                        #pos=dset.attrs["position"]
+                        scan_vals.append(p)
 
-            hit1=float(hits)
-            pulses=float(numof_pulses)
-            d_eff=hits1/pulses
-            d_eff_list.append(d_eff)
+            scan_vals=list(map(float, scan_vals))
+            scan_vals.sort()
 
-        d_eff_list.insert(0,0) #temporary
+            return scan_vals
+
+
+        def detection_eff():
+            i=0
+            for pos in scan_vals:
+                if pos == old_pos:
+                    temp_lst.append(min_pulses[i])
+
+                else:
+                    x_pos.append(old_pos)
+                    y_pos.append(old_pos)
+
+                    collective.append([old_pos,temp_lst])
+                    temp_lst=[]
+                    temp_lst.append(min_pulses[i])
+
+                i+=1
+                old_pos=pos
+
+                x_pos=list(map(lambda x: x//10, x_pos))
+                y_pos=list(map(lambda y: y%10, y_pos))
+
+                d_eff_list=[]
+
+                for i in range(len(collective)-1):
+                    loc=collective[i+1][0]
+                    pulse_list=collective[i+1][1]
+                    hits=0
+                    numof_pulses=len(pulse_list)
+                    for pulse in pulse_list:
+                        #if pulse<cutoff:
+                        #if pulse>2080: #temporary because of 2048 issue
+                        if pulse>cutoff:
+                            hits+=1
+
+                        hit1=float(hits)
+                        pulses=float(numof_pulses)
+                        d_eff=hits1/pulses
+                        d_eff_list.append(d_eff)
+
+                d_eff_list.insert(0,0) #temporary
+
+            return d_eff_list, x_pos, y_pos
+
+
+        def plotting():
+            xl=np.linspace(0,10,10)
+            yl=np.linspace(0,10,10)
+            xl,yl=np.meshgrid(x,y)
+
+            Z=np.resize(d_eff_l,xl.shape)
+            plt.imshow(Z, cmap=plt.cm.cool, interpolation='nearest', extent=[0,10,0,10]) #make extent dynamic later
+            plt.colorbar()
+            plt.xlabel('X positon [m]')
+            plt.ylabel('Y positon [m]')
+            plt.title(''.join([self.file_name,' detection efficency']))
+            plt.savefig(''.join([self.file_name,'_detectionEfficency']))
+
+
+        hdf5_file=h5py.File(''.join([self.file_name,'ScanEvents', '.hdf5']), 'r')
+
+        #min_pulses=[] #get this stuff returned from histo?
+        x_hist, y_hist, min_pulses = self.min_vals_histo()#might not need to enter global variable
+        cutoff = calc_cutoff() #stop using local and global names twice
+        # move non-functions down
+        pos_vals = position_vals()
+        d_eff_l, x, y = detection_eff()
 
         hdf5_file.close()
+
+        plotting()
 
         #arr = []
         #for i in range(len(x_pos)):
@@ -197,25 +245,13 @@ class hdf5_read:
         #a=np.array(x_pos,y_pos,d_eff_list)
         #X = [x_pos,y_pos,d_eff_list]
 
-        x=np.linspace(0,10,10)
-        y=np.linspace(0,10,10)
-        x,y=np.meshgrid(x,y)
 
-        Z=np.resize(d_eff_list,x.shape)
-        plt.imshow(Z, cmap='hot', interpolation='nearest', extent=[0,10,0,10]) #make extent dynamic later
-        plt.colorbar()
-        plt.xlabel('X positon [m]')
-        plt.ylabel('Y positon [m]')
-        plt.title(''.join([self.file_name,' detection efficency']))
-        plt.savefig(''.join([self.file_name,' detection efficency']))
-
-
-
-writename=sys.argv[1]
+fname=sys.argv[1]
 #plot_title=sys.argv[2]
 #bins=sys.argv[3]
 
-test=hdf5_read("".join([writename,"ScanEvents"]))
+#test=hdf5_read("".join([writename,"ScanEvents"]))
+test=hdf5_read(fname)
 test.min_vals_histo() # get binning done automatically
 test.full_scan()
 #test.temp_vs_min(plot_title)
