@@ -197,7 +197,7 @@ class hdf5_read:
                     numof_pulses=len(pulse_list)
                     for pulse in pulse_list:
                         #if pulse<cutoff:
-                        fif pulse>2080: #temporary because of 2048 issue
+                        if pulse>2080: #temporary because of 2048 issue
                         #if pulse>cutoff:
                             hits+=1
 
