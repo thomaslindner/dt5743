@@ -197,8 +197,8 @@ class hdf5_read:
                     numof_pulses=len(pulse_list)
                     for pulse in pulse_list:
                         #if pulse<cutoff:
-                        #if pulse>2080: #temporary because of 2048 issue
-                        if pulse>cutoff:
+                        fif pulse>2080: #temporary because of 2048 issue
+                        #if pulse>cutoff:
                             hits+=1
 
                         hit1=float(hits)
@@ -229,7 +229,7 @@ class hdf5_read:
 
         #min_pulses=[] #get this stuff returned from histo?
         x_hist, y_hist, min_pulses = self.min_vals_histo()#might not need to enter global variable
-        cutoff = calc_cutoff() #stop using local and global names twice
+        #cutoff = calc_cutoff() #stop using local and global names twice
         # move non-functions down
         pos_vals = position_vals()
         d_eff_l, x, y = detection_eff()
