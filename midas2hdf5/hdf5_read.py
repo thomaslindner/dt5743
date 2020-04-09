@@ -133,21 +133,23 @@ class hdf5_read:
             return calc_cutoff
 
 
+        dataset_keys=[]
+        scan_vals=[]
+        x_pos=[]
+        y_pos=[]
+        old_pos=0
+        p=0
+        #pos=0
+        collective=[]
+        temp_lst=[]
+
+        
         def position_vals():
             keys=hdf5_file.keys()
             groups=[]
             for key in keys:
                 groups.append(hdf5_file[key])
 
-            dataset_keys=[]
-            scan_vals=[]
-            x_pos=[]
-            y_pos=[]
-            old_pos=0
-            p=0
-            #pos=0
-            collective=[]
-            temp_lst=[]
             for group in groups:
                 for data_set_name in group.keys():
                     if data_set_name=="ch0":
@@ -217,7 +219,7 @@ class hdf5_read:
             xl,yl=np.meshgrid(x,y)
 
             Z=np.resize(d_eff_l,xl.shape)
-            plt.imshow(Z, cmap=plt.cm.cool, interpolation='nearest', extent=[0,10,0,10]) #make extent dynamic later
+            plt.imshow(Z, cmap='hot', interpolation='nearest', extent=[0,10,0,10]) #make extent dynamic later
             plt.colorbar()
             plt.xlabel('X positon [m]')
             plt.ylabel('Y positon [m]')
