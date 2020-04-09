@@ -231,7 +231,7 @@ class hdf5_read:
         x_hist, y_hist, min_pulses = self.min_vals_histo()#might not need to enter global variable
         #cutoff = calc_cutoff() #stop using local and global names twice
         # move non-functions down
-        pos_vals = position_vals()
+        scan_vals = position_vals()
         d_eff_l, x, y = detection_eff()
 
         hdf5_file.close()
