@@ -138,8 +138,6 @@ class hdf5_read:
         #old_pos=0
         p=0
         #pos=0
-        collective=[]
-        temp_lst=[]
 
 
         def position_vals():
@@ -172,6 +170,8 @@ class hdf5_read:
             i=0
             x_pos=[]
             y_pos=[]
+            collective=[]
+            temp_lst=[]
             old_pos=0
             for pos in scan_vals:
                 if pos == old_pos:
