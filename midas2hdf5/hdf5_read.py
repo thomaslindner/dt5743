@@ -143,13 +143,13 @@ class hdf5_read:
         collective=[]
         temp_lst=[]
 
-        
+
         def position_vals():
             keys=hdf5_file.keys()
             groups=[]
+            scan_vals=[]
             for key in keys:
                 groups.append(hdf5_file[key])
-
             for group in groups:
                 for data_set_name in group.keys():
                     if data_set_name=="ch0":
@@ -233,7 +233,8 @@ class hdf5_read:
         x_hist, y_hist, min_pulses = self.min_vals_histo()#might not need to enter global variable
         #cutoff = calc_cutoff() #stop using local and global names twice
         # move non-functions down
-        scan_vals = position_vals()
+        #scan_vals = position_vals()
+        scan_vals=position_vals()
         d_eff_l, x, y = detection_eff()
 
         hdf5_file.close()
