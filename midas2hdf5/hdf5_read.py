@@ -134,10 +134,8 @@ class hdf5_read:
 
 
         dataset_keys=[]
-        scan_vals=[]
-        x_pos=[]
-        y_pos=[]
-        old_pos=0
+        #scan_vals=[]
+        #old_pos=0
         p=0
         #pos=0
         collective=[]
@@ -172,6 +170,9 @@ class hdf5_read:
 
         def detection_eff():
             i=0
+            x_pos=[]
+            y_pos=[]
+            old_pos=0
             for pos in scan_vals:
                 if pos == old_pos:
                     temp_lst.append(min_pulses[i])
