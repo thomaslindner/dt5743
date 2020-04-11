@@ -60,7 +60,9 @@ class hdf5_read:
         plt.title(''.join([self.file_name,' histogram']))
         plt.savefig(''.join([self.file_name,'_histogram']))
 
-        return x_hist, y_hist, min_pulses#perhaps make it just return 2 max vals and min pulses?
+        #return x_hist, y_hist, min_pulses#perhaps make it just return 2 max vals and min pulses?
+        #return the pedastal val="" and cutoff of single pe peak and then pulse vals
+        return None
 
     def temp_vs_min(self,title):
         '''
@@ -220,7 +222,7 @@ class hdf5_read:
             xl,yl=np.meshgrid(x,y)
 
             Z=np.resize(d_eff_l,xl.shape)
-            plt.imshow(Z, cmap=plt.cm.magma_r., interpolation='nearest', extent=[0,10,0,10]) #make extent dynamic later
+            plt.imshow(Z, cmap=plt.cm.magma_r, interpolation='nearest', extent=[0,10,0,10]) #make extent dynamic later
             plt.colorbar()
             plt.xlabel('X positon [m]')
             plt.ylabel('Y positon [m]')
@@ -257,5 +259,5 @@ fname=sys.argv[1]
 #test=hdf5_read("".join([writename,"ScanEvents"]))
 test=hdf5_read(fname)
 test.min_vals_histo() # get binning done automatically
-test.full_scan()
+#test.full_scan()
 #test.temp_vs_min(plot_title)
