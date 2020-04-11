@@ -53,7 +53,8 @@ class hdf5_read:
 
         hdf5_file.close()
         # do you need the underscore?
-        y_hist, x_hist, patches = plt.hist(min_pulses, bins='auto')
+        #y_hist, x_hist, patches = plt.hist(min_pulses, bins='auto')
+        y_hist, x_hist, patches = plt.hist(min_pulses, bins=100)
         #dk = plt.hist(min_pulses, bins='auto')
         #print(dk)
         plt.yscale('log')
@@ -166,8 +167,8 @@ class hdf5_read:
                         #pos=dset.attrs["position"]
                         scan_vals.append(p)
 
-            scan_vals=list(map(float, scan_vals))
-            scan_vals.sort()
+            #scan_vals=list(map(float, scan_vals))
+            #scan_vals.sort()
 
             return scan_vals
 
@@ -194,28 +195,28 @@ class hdf5_read:
                 i+=1
                 old_pos=pos
 
-                x_pos=list(map(lambda x: x//10, x_pos))
-                y_pos=list(map(lambda y: y%10, y_pos))
+            x_pos=list(map(lambda x: x//10, x_pos))
+            y_pos=list(map(lambda y: y%10, y_pos))
 
-                d_eff_list=[]
+            d_eff_list=[]
 
-                for i in range(len(collective)-1):
-                    loc=collective[i+1][0]
-                    pulse_list=collective[i+1][1]
-                    hits=0
-                    numof_pulses=len(pulse_list)
-                    for pulse in pulse_list:
+            for i in range(len(collective)-1):
+                loc=collective[i+1][0]
+                pulse_list=collective[i+1][1]
+                hits=0
+                numof_pulses=len(pulse_list)
+                for pulse in pulse_list:
                         #if pulse<cutoff:
-                        if pulse>2080: #temporary because of 2048 issue
+                    if pulse>2080: #temporary because of 2048 issue
                         #if pulse>cutoff:
-                            hits+=1
+                        hits+=1
 
-                        hits1=float(hits)
-                        pulses=float(numof_pulses)
-                        d_eff=hits1/pulses
-                        d_eff_list.append(d_eff)
+                    hits1=float(hits)
+                    pulses=float(numof_pulses)
+                    d_eff=hits1/pulses
+                    d_eff_list.append(d_eff)
 
-                d_eff_list.insert(0,0) #temporary
+            d_eff_list.insert(0,0) #temporary
 
             return d_eff_list, x_pos, y_pos
 
@@ -235,17 +236,19 @@ class hdf5_read:
 
 
         hdf5_file=h5py.File(''.join([self.file_name,'ScanEvents', '.hdf5']), 'r')
-
+        print("1/4")
         #min_pulses=[] #get this stuff returned from histo?
-        x_hist, y_hist, min_pulses = self.min_vals_histo()#might not need to enter global variable
+        y_hist, min_pulses = self.min_vals_histo()#might not need to enter global variable
         #cutoff = calc_cutoff() #stop using local and global names twice
         # move non-functions down
         #scan_vals = position_vals()
+        print("2/4")
         scan_vals=position_vals()
+        print("3/4")
         d_eff_l, x, y = detection_eff()
 
         hdf5_file.close()
-
+        print("4/4")
         plotting()
 
         #arr = []
