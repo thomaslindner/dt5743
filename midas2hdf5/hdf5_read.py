@@ -49,13 +49,13 @@ class hdf5_read:
                     data_set=group[data_set_name].value
                     min_pulses.append(np.min(data_set))
 
-        print("min pulses",min_pulses)
+        #print("min pulses",min_pulses)
 
         hdf5_file.close()
         # do you need the underscore?
-        #y_hist, x_hist, _ = plt.hist(min_pulses, bins='auto')
-        dk = plt.hist(min_pulses, bins='auto')
-        print(dk)
+        y_hist, x_hist, patches = plt.hist(min_pulses, bins='auto')
+        #dk = plt.hist(min_pulses, bins='auto')
+        #print(dk)
         plt.yscale('log')
         plt.xlabel('Waveform Minimum Value (ADC)')
         plt.ylabel('Frequency')
@@ -66,6 +66,7 @@ class hdf5_read:
         #return the pedastal val="" and cutoff of single pe peak and then pulse vals
         #return x_hist, y_hist, min_pulses
         #return x.max(), y.max(), min_pulses
+        return y_hist, min_pulses
 
     def temp_vs_min(self,title):
         '''
