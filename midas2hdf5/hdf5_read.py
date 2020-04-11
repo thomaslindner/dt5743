@@ -28,6 +28,7 @@ class hdf5_read:
     def min_vals_histo(self):
         '''
         makes historgram of pulses
+        with bin number generated automatically
         '''
         hdf5_file=h5py.File(''.join([self.file_name, 'ScanEvents', '.hdf5']), 'r') # you may specify file driver
         min_pulses=[]
@@ -48,19 +49,18 @@ class hdf5_read:
                     data_set=group[data_set_name].value
                     min_pulses.append(np.min(data_set))
 
-        #print(min_pulses)#lots more noise and round numbers than usual?
-        #change to pick bin numbers automatically
+        print("min pulses",min_pulses)
 
         hdf5_file.close()
-        #make binning automatic, do you need the underscore?
-        y_hist, x_hist, _ = plt.hist(min_pulses, 100)#directly input bin num to get rid of the error
+        # do you need the underscore?
+        y_hist, x_hist, _ = plt.hist(min_pulses, bins='auto')
         plt.yscale('log')
         plt.xlabel('Waveform Minimum Value (ADC)')
         plt.ylabel('Frequency')
         plt.title(''.join([self.file_name,' histogram']))
         plt.savefig(''.join([self.file_name,'_histogram']))
 
-        return x_hist, y_hist, min_pulses
+        return x_hist, y_hist, min_pulses#perhaps make it just return 2 max vals and min pulses?
 
     def temp_vs_min(self,title):
         '''
@@ -204,7 +204,7 @@ class hdf5_read:
                         #if pulse>cutoff:
                             hits+=1
 
-                        hit1=float(hits)
+                        hits1=float(hits)
                         pulses=float(numof_pulses)
                         d_eff=hits1/pulses
                         d_eff_list.append(d_eff)
@@ -220,7 +220,7 @@ class hdf5_read:
             xl,yl=np.meshgrid(x,y)
 
             Z=np.resize(d_eff_l,xl.shape)
-            plt.imshow(Z, cmap='hot', interpolation='nearest', extent=[0,10,0,10]) #make extent dynamic later
+            plt.imshow(Z, cmap=plt.cm.magma_r., interpolation='nearest', extent=[0,10,0,10]) #make extent dynamic later
             plt.colorbar()
             plt.xlabel('X positon [m]')
             plt.ylabel('Y positon [m]')
