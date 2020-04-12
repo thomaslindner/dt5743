@@ -11,7 +11,10 @@ import matplotlib
 matplotlib.use('Agg')
 
 import matplotlib.pyplot as plt
-from matplotlib.colors import LinearSegmentedColormap
+#from matplotlib.colors import LinearSegmentedColormap
+import colormaps as cmaps
+plt.register_cmap(name='viridis', cmap=cmaps.viridis)
+plt.set_cmap(cmaps.viridis)
 
 
 class hdf5_read:
@@ -234,7 +237,8 @@ class hdf5_read:
             #color_map.set_cmap("Blues_r")
             #plt.colorbar()
 
-            plt.imshow(Z, cmap='magma', interpolation='nearest', extent=[0,10,0,10]) #make extent dynamic later
+            #plt.imshow(Z, cmap=plt.cm.get_cmap(name='magma'), interpolation='nearest', extent=[0,10,0,10]) #make extent dynamic later
+            plt.imshow(Z, interpolation='nearest', extent=[0,10,0,10])
             plt.colorbar()
             plt.xlabel('X positon [m]')
             plt.ylabel('Y positon [m]')
