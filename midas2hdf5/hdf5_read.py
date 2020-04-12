@@ -11,6 +11,7 @@ import matplotlib
 matplotlib.use('Agg')
 
 import matplotlib.pyplot as plt
+from matplotlib.colors import LinearSegmentedColormap
 
 
 class hdf5_read:
@@ -227,7 +228,13 @@ class hdf5_read:
             xl,yl=np.meshgrid(x,y)
 
             Z=np.resize(d_eff_l,xl.shape)
-            plt.imshow(Z, cmap=plt.cm.magma_r, interpolation='nearest', extent=[0,10,0,10]) #make extent dynamic later
+
+
+            #color_map = plt.imshow(x)
+            #color_map.set_cmap("Blues_r")
+            #plt.colorbar()
+
+            plt.imshow(Z, cmap='magma', interpolation='nearest', extent=[0,10,0,10]) #make extent dynamic later
             plt.colorbar()
             plt.xlabel('X positon [m]')
             plt.ylabel('Y positon [m]')
@@ -266,5 +273,5 @@ fname=sys.argv[1]
 #test=hdf5_read("".join([writename,"ScanEvents"]))
 test=hdf5_read(fname)
 test.min_vals_histo() # get binning done automatically
-#test.full_scan()
+test.full_scan()
 #test.temp_vs_min(plot_title)
