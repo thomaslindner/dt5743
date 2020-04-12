@@ -12,10 +12,13 @@ matplotlib.use('Agg')
 
 import matplotlib.pyplot as plt
 #from matplotlib.colors import LinearSegmentedColormap
-import colormaps as cmaps
-plt.register_cmap(name='viridis', cmap=cmaps.viridis)
-plt.set_cmap(cmaps.viridis)
 
+#import colormaps as cmaps
+#plt.register_cmap(name='viridis', cmap=cmaps.viridis)
+#plt.set_cmap(cmaps.viridis)
+
+plt.register_cmap(name='viridis', cmap=plt.cm.viridis)
+plt.set_cmap(plt.cm.viridis)
 
 class hdf5_read:
     '''
