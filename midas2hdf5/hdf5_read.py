@@ -307,26 +307,26 @@ class hdf5_read:
         length=len(data_set)
         avg=sum(data_set)/length
         event_num=event
-        standard_dev=data_set.np.std()
+        standard_dev=np.std(data_set)
 
         fig, ax = plt.subplots()
 
-        textstr = '\n'.join(["Entries ", length, "\nMean ",avg,"\nStd Dev",standard_dev])
+        textstr = '\n'.join(["Entries ", str(length), "\nMean ",str(avg),"\nStd Dev",str(standard_dev)])
 
-        props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+        props = dict(boxstyle='round', facecolor='white', alpha=0.5)
 
 # place a text box in upper left in axes coords
         ax.text(0.05, 0.95, textstr, transform=ax.transAxes, fontsize=14,
-        verticalalignment='top', bbox=props)
+        verticalalignment='bottom', bbox=props)
 
         #what exactly are we plotting?
         #assuming its 0-300ns
         x=np.linspace(0,300,length)
-        ax.plot(x, data_set, "b-")
+        ax.plot(x, data_set, color='black')
         plt.ylabel('Waveform Minimum Value (ADC)')
         plt.xlabel('Time (ns)')
-        plt.title(''.join([self.file_name,' event #', event_num,'DT743 Waveform Display for channel=0']))
-        plt.savefig('Waveform Saved')
+        plt.title(''.join([self.file_name,' event #', str(event_num),' DT743 Waveform for channel=0']))
+        plt.savefig('Waveform Example')
         #show and dont save in the future
         #its not showing it so you might just have to save
 
