@@ -11,14 +11,21 @@ import matplotlib
 matplotlib.use('Agg')
 
 import matplotlib.pyplot as plt
+#print(plt.colormaps())
+from matplotlib import cm
+from matplotlib.colors import ListedColormap, LinearSegmentedColormap
+#use notebook to get list of colors for magma_r and then initialize
+#magma_r here
+
+
 #from matplotlib.colors import LinearSegmentedColormap
 
 #import colormaps as cmaps
 #plt.register_cmap(name='viridis', cmap=cmaps.viridis)
 #plt.set_cmap(cmaps.viridis)
 
-plt.register_cmap(name='viridis', cmap=plt.cm.viridis)
-plt.set_cmap(plt.cm.viridis)
+#plt.register_cmap(name='viridis', cmap=plt.cm.viridis)
+#plt.set_cmap(plt.cm.viridis)
 
 class hdf5_read:
     '''
@@ -272,6 +279,39 @@ class hdf5_read:
         #a=np.array(x_pos,y_pos,d_eff_list)
         #X = [x_pos,y_pos,d_eff_list]
 
+    def waveform_display(self,event):
+        '''
+        displays waveform of specified event #
+        '''
+        hdf5_file=h5py.File(''.join([self.file_name,'ScanEvents', '.hdf5']), 'r')
+
+        #iterate to get the event and plot it!
+        keys=hdf5_file.keys()
+        #if "".join(["Event #",str(event)]) in keys:
+
+        groups=[]
+        bank_vals=[]
+        for key in keys:
+            if "".join(["Event #",str(event)])==key:
+                groups.append(hdf5_file[key])
+        for group in groups:
+            for data_set_name in group.keys():
+                if data_set_name=="ch0":
+                    data_set=group[data_set_name].value
+                    bank_vals.append(data_set)
+            #        dset=group[data_set_name]
+                    #min_pulses.append(np.min(data_set))
+                    #read in SCAN vals
+
+        hdf5_file.close()
+        #what exactly are we plotting?
+        #assuming its 0-300ns
+        x=range(0,300,len(data_set))
+        plt.plot(x, data_set)
+        plt.ylabel('Waveform Minimum Value (ADC)')
+        plt.xlabel('Time (ns)')
+        plt.title(''.join([self.file_name,' Waveform Display']))
+
 
 fname=sys.argv[1]
 #plot_title=sys.argv[2]
@@ -279,6 +319,7 @@ fname=sys.argv[1]
 
 #test=hdf5_read("".join([writename,"ScanEvents"]))
 test=hdf5_read(fname)
-test.min_vals_histo() # get binning done automatically
-test.full_scan()
+#test.min_vals_histo() # get binning done automatically
+#test.full_scan()
 #test.temp_vs_min(plot_title)
+test.waveform_display(20)
