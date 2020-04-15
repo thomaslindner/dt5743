@@ -8,7 +8,7 @@ import matplotlib
 import matplotlib.pyplot as plt
 
 
-def waveform_display(self,run,event):
+def waveform_display(run,event):
     '''
     displays waveform of specified event # and run #/filename
     '''
@@ -61,6 +61,6 @@ def online_waveform_display():
 
 
 fname=sys.argv[1]
-event_num=sys.argv[2]
+event_num=int(sys.argv[2])
 
 waveform_display(fname,event_num)
