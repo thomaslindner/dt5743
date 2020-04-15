@@ -32,24 +32,18 @@ def waveform_display(run,event):
     fig, ax = plt.subplots()
 
     textstr = '\n'.join(["Entries ", str(length), "\nMean ",str(avg),"\nStd Dev",str(standard_dev)])
-
     props = dict(boxstyle='round', facecolor='white', alpha=0.5)
-
-# place a text box in upper left in axes coords
     ax.text(0.05, 0.5, textstr, transform=ax.transAxes, fontsize=10,
-    verticalalignment='right', bbox=props)
+    verticalalignment='top', bbox=props)
 
-    #what exactly are we plotting?
     #assuming its 0-300ns
     x=np.linspace(0,300,length)
     ax.plot(x, data_set, color='black')
     plt.ylabel('Waveform Minimum Value (ADC)')
-    plt.xlabel('Time (ns)')
+    plt.xlabel('Time (ns)') #you will need to specify the trigger value?
     plt.title(''.join([run,' event #', str(event_num),' DT743 Waveform for channel=0']))
     plt.show()
     #plt.savefig('Waveform Example')
-    #show and dont save in the future
-    #its not showing it so you might just have to save
 
 
 
