@@ -290,7 +290,7 @@ class hdf5_read:
         #if "".join(["Event #",str(event)]) in keys:
 
         groups=[]
-        bank_vals=[]
+        #bank_vals=[]
         for key in keys:
             if "".join(["Event #",str(event)])==key:
                 groups.append(hdf5_file[key])
@@ -298,19 +298,37 @@ class hdf5_read:
             for data_set_name in group.keys():
                 if data_set_name=="ch0":
                     data_set=group[data_set_name].value
-                    bank_vals.append(data_set)
+                    #bank_vals.append(data_set)
             #        dset=group[data_set_name]
                     #min_pulses.append(np.min(data_set))
                     #read in SCAN vals
-
         hdf5_file.close()
+
+        length=len(data_set)
+        avg=sum(data_set)/length
+        event_num=event
+        standard_dev=data_set.np.std()
+
+        fig, ax = plt.subplots()
+
+        textstr = '\n'.join(["Entries ", length, "\nMean ",avg,"\nStd Dev",standard_dev])
+
+        props = dict(boxstyle='round', facecolor='wheat', alpha=0.5)
+
+# place a text box in upper left in axes coords
+        ax.text(0.05, 0.95, textstr, transform=ax.transAxes, fontsize=14,
+        verticalalignment='top', bbox=props)
+
         #what exactly are we plotting?
         #assuming its 0-300ns
-        x=range(0,300,len(data_set))
-        plt.plot(x, data_set)
+        x=np.linspace(0,300,length)
+        ax.plot(x, data_set, "b-")
         plt.ylabel('Waveform Minimum Value (ADC)')
         plt.xlabel('Time (ns)')
-        plt.title(''.join([self.file_name,' Waveform Display']))
+        plt.title(''.join([self.file_name,' event #', event_num,'DT743 Waveform Display for channel=0']))
+        plt.savefig('Waveform Saved')
+        #show and dont save in the future
+        #its not showing it so you might just have to save
 
 
 fname=sys.argv[1]
