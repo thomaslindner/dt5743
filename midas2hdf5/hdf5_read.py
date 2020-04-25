@@ -287,6 +287,7 @@ class hdf5_read:
         '''
         single_pe_pourcentage=36.8
         double_pe_pourcentage=13.5
+        more_pe_pourcentage=6.75#get this number better later
         #calculate the rest
         y_hist, min_pulses = self.min_vals_histo()
         noise_only=list(filter(lambda x: x<2350, min_pulses)) #assuming noise bottoms at 2355
@@ -294,16 +295,26 @@ class hdf5_read:
         numof_noise_only=len(noise_only)
         numof_total_pulses=len(min_pulses)
         #numof_pe_observed=len(pe_observed)
-        pourcentage_of_noise=numof_noise_only/numof_total_pulses
+        pourcentage_of_noise=100*numof_noise_only/numof_total_pulses
 
-        if pourcentage_of_noise==single_pe_pourcentage:
+
+        if 46.8<pourcentage_of_noise<100:#make this more dybnamic like single pourcentage +10
+            return "Most likely no PE"
+
+        elif abs(pourcentage_of_noise-single_pe_pourcentage)<=10:
             return "Single PE levels"
 
-        elif pourcentage_of_noise==double_pe_pourcentage:
+        elif 18.5<pourcentage_of_noise<26.8:
+            return "1-2 PE"
+
+        elif abs(pourcentage_of_noise-double_pe_pourcentage)<=5:
             return "Double PE levels"
 
-        else:
+        elif abs(pourcentage_of_noise-more_pe_pourcentage)<=5:
             return "Three or more PE"
+
+        else:
+            return "Many PEs"
 
 
 
@@ -317,4 +328,5 @@ test=hdf5_read(fname)
 #test.full_scan()
 #test.temp_vs_min(plot_title)
 #test.waveform_display(20)
-test.pe_levels()
+pe_l=test.pe_levels()
+print(pe_l)
