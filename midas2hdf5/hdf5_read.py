@@ -279,56 +279,32 @@ class hdf5_read:
         #a=np.array(x_pos,y_pos,d_eff_list)
         #X = [x_pos,y_pos,d_eff_list]
 
-    def waveform_display(self,event):
+
+    def pe_levels(self):
         '''
-        displays waveform of specified event #
+        returns roughly how many PEs are being
+        observed by the PMT
         '''
-        hdf5_file=h5py.File(''.join([self.file_name,'ScanEvents', '.hdf5']), 'r')
+        single_pe_pourcentage=36.8
+        double_pe_pourcentage=13.5
+        #calculate the rest
+        y_hist, min_pulses = self.min_vals_histo()
+        noise_only=list(filter(lambda x: x<2350, min_pulses)) #assuming noise bottoms at 2355
+        #pe_observed=list(filter(lambda x: x>2350, min_pulses))
+        numof_noise_only=len(noise_only)
+        numof_total_pulses=len(min_pulses)
+        #numof_pe_observed=len(pe_observed)
+        pourcentage_of_noise=numof_noise_only/numof_total_pulses
 
-        #iterate to get the event and plot it!
-        keys=hdf5_file.keys()
-        #if "".join(["Event #",str(event)]) in keys:
+        if pourcentage_of_noise==single_pe_pourcentage:
+            return "Single PE levels"
 
-        groups=[]
-        #bank_vals=[]
-        for key in keys:
-            if "".join(["Event #",str(event)])==key:
-                groups.append(hdf5_file[key])
-        for group in groups:
-            for data_set_name in group.keys():
-                if data_set_name=="ch0":
-                    data_set=group[data_set_name].value
-                    #bank_vals.append(data_set)
-            #        dset=group[data_set_name]
-                    #min_pulses.append(np.min(data_set))
-                    #read in SCAN vals
-        hdf5_file.close()
+        elif pourcentage_of_noise==double_pe_pourcentage:
+            return "Double PE levels"
 
-        length=len(data_set)
-        avg=sum(data_set)/length
-        event_num=event
-        standard_dev=np.std(data_set)
+        else:
+            return "Three or more PE"
 
-        fig, ax = plt.subplots()
-
-        textstr = '\n'.join(["Entries ", str(length), "\nMean ",str(avg),"\nStd Dev",str(standard_dev)])
-
-        props = dict(boxstyle='round', facecolor='white', alpha=0.5)
-
-# place a text box in upper left in axes coords
-        ax.text(0.05, 0.95, textstr, transform=ax.transAxes, fontsize=14,
-        verticalalignment='bottom', bbox=props)
-
-        #what exactly are we plotting?
-        #assuming its 0-300ns
-        x=np.linspace(0,300,length)
-        ax.plot(x, data_set, color='black')
-        plt.ylabel('Waveform Minimum Value (ADC)')
-        plt.xlabel('Time (ns)')
-        plt.title(''.join([self.file_name,' event #', str(event_num),' DT743 Waveform for channel=0']))
-        plt.savefig('Waveform Example')
-        #show and dont save in the future
-        #its not showing it so you might just have to save
 
 
 fname=sys.argv[1]
@@ -340,4 +316,5 @@ test=hdf5_read(fname)
 #test.min_vals_histo() # get binning done automatically
 #test.full_scan()
 #test.temp_vs_min(plot_title)
-test.waveform_display(20)
+#test.waveform_display(20)
+test.pe_levels()
