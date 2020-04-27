@@ -68,7 +68,7 @@ class hdf5_read:
         hdf5_file.close()
         # do you need the underscore?
         #y_hist, x_hist, patches = plt.hist(min_pulses, bins='auto')
-        y_hist, x_hist, patches = plt.hist(min_pulses, bins=100)
+        x_hist, y_hist, patches = plt.hist(min_pulses, bins=100)#changed x and y order
         #dk = plt.hist(min_pulses, bins='auto')
         #print(dk)
         plt.yscale('log')
@@ -137,7 +137,7 @@ class hdf5_read:
         '''
 
         def calc_cutoff():
-            pedastal=max(y_hist)
+            pedastal=max(y_hist)#yhist might be wrong
             ind=y_hist.index(pedastal)
             pe_peak=y_hist.pop(ind)
             #define local functions for much of this stuff
@@ -295,16 +295,20 @@ class hdf5_read:
         #calculate the rest
         y_hist, min_pulses = self.min_vals_histo()
         noise_cutoff=max(y_hist)-5#should be around 2350
-        print(noise_cutoff)
-        noise_only=list(filter(lambda x: x<noise_cutoff, min_pulses)) #shouldnt it be <
+
+        #str_toprint1=str(''.join(["bottom of noise",str(noise_cutoff)]))
+        #print(str_toprint1)
+        
+        noise_only=list(filter(lambda x: x>=noise_cutoff, min_pulses)) #shouldnt it be <
         #pe_observed=list(filter(lambda x: x>2350, min_pulses))
         numof_noise_only=len(noise_only)
         numof_total_pulses=len(min_pulses)
-        print(numof_noise_only,numof_total_pulses)
+        #print(numof_noise_only,numof_total_pulses)
         #numof_pe_observed=len(pe_observed)
         pourcentage_of_noise=100*numof_noise_only/numof_total_pulses
 
-        print("percentage of triggers with no P.E. pulses in them: ", pourcentage_of_noise, "%")
+        str_toprint2=str(''.join(["percentage of triggers with no P.E. pulses in them: ", str(pourcentage_of_noise), "%"]))
+        print(str_toprint)
 
         #if 46.8<pourcentage_of_noise<100:#make this more dybnamic like single pourcentage +10
         #    print("Most likely no PE")
