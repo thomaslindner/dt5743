@@ -294,7 +294,7 @@ class hdf5_read:
         five_pe_pourcentage=0.674
         #calculate the rest
         y_hist, min_pulses = self.min_vals_histo()
-        noise_cutoff=max(y_hist)-5#should be around 2350
+        noise_cutoff=max(y_hist)-3#should be around 2350
 
         #str_toprint1=str(''.join(["bottom of noise",str(noise_cutoff)]))
         #print(str_toprint1)
