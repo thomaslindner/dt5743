@@ -285,37 +285,68 @@ class hdf5_read:
         returns roughly how many PEs are being
         observed by the PMT
         '''
-        single_pe_pourcentage=36.8
-        double_pe_pourcentage=13.5
-        more_pe_pourcentage=6.75#get this number better later
+        # the following are taken directly from the poisson distribution
+        # formula, where k=0 and lambda=pe level
+        one_pe_pourcentage=36.8
+        two_pe_pourcentage=13.5
+        three_pe_pourcentage=4.98
+        four_pe_pourcentage=1.83
+        five_pe_pourcentage=0.674
         #calculate the rest
         y_hist, min_pulses = self.min_vals_histo()
-        noise_only=list(filter(lambda x: x<2350, min_pulses)) #assuming noise bottoms at 2355
+        noise_cutoff=max(y_hist)-5#should be around 2350
+        noise_only=list(filter(lambda x: x>noise_bottom, min_pulses)) #assuming noise bottoms at 2355
         #pe_observed=list(filter(lambda x: x>2350, min_pulses))
         numof_noise_only=len(noise_only)
         numof_total_pulses=len(min_pulses)
         #numof_pe_observed=len(pe_observed)
         pourcentage_of_noise=100*numof_noise_only/numof_total_pulses
 
+        print("percentage of triggers with no P.E. pulses in them: ", pourcentage_of_noise, "%")
 
-        if 46.8<pourcentage_of_noise<100:#make this more dybnamic like single pourcentage +10
-            return "Most likely no PE"
+        #if 46.8<pourcentage_of_noise<100:#make this more dybnamic like single pourcentage +10
+        #    print("Most likely no PE")
 
-        elif abs(pourcentage_of_noise-single_pe_pourcentage)<=10:
-            return "Single PE levels"
+        #elif abs(pourcentage_of_noise-single_pe_pourcentage)<=10:
+        #    print("Single PE levels")
 
-        elif 18.5<pourcentage_of_noise<26.8:
-            return "1-2 PE"
+        #elif 18.5<pourcentage_of_noise<26.8:
+        #    print("1-2 PE")
 
-        elif abs(pourcentage_of_noise-double_pe_pourcentage)<=5:
-            return "Double PE levels"
+        #elif abs(pourcentage_of_noise-double_pe_pourcentage)<=5:
+        #    print("Double PE levels")
 
-        elif abs(pourcentage_of_noise-more_pe_pourcentage)<=5:
-            return "Three or more PE"
+        #elif abs(pourcentage_of_noise-more_pe_pourcentage)<=5:
+        #    print("Three or more PE")
+
+        #else:
+        #    print("Many PEs")
+
+        #maybe standardize just like +-5% of the value
+
+        if (one_pe_pourcentage+5)<=pourcentage_of_noise<=100:
+            print("Zero PE")
+
+        elif (one_pe_pourcentage-5)<=pourcentage_of_noise<(one_pe_pourcentage+5):
+            print("Single PE")
+
+        elif (two_pe_pourcentage-3)<=pourcentage_of_noise<(two_pe_pourcentage+3):
+            print("Double PE")
+
+        elif (three_pe_pourcentage-2)<=pourcentage_of_noise<(three_pe_pourcentage+2):
+            print("Triple PE")
+
+        elif (four_pe_pourcentage-1)<=pourcentage_of_noise<(four_pe_pourcentage+1):
+            print("Four PE")
+
+        elif (five_pe_pourcentage-0.2)<=pourcentage_of_noise<(five_pe_pourcentage+0.2):
+            print("Five PE")
+
+        elif (five_pe_pourcentage+0.2)<=pourcentage_of_noise<=0:
+            print("Six or more PE")
 
         else:
-            return "Many PEs"
-
+            print("Does not clearly fit a PE level")
 
 
 fname=sys.argv[1]
@@ -329,4 +360,3 @@ test=hdf5_read(fname)
 #test.temp_vs_min(plot_title)
 #test.waveform_display(20)
 pe_l=test.pe_levels()
-print(pe_l)
