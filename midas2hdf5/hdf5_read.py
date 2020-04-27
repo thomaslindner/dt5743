@@ -295,10 +295,12 @@ class hdf5_read:
         #calculate the rest
         y_hist, min_pulses = self.min_vals_histo()
         noise_cutoff=max(y_hist)-5#should be around 2350
+        print(noise_cutoff)
         noise_only=list(filter(lambda x: x<noise_cutoff, min_pulses)) #shouldnt it be <
         #pe_observed=list(filter(lambda x: x>2350, min_pulses))
         numof_noise_only=len(noise_only)
         numof_total_pulses=len(min_pulses)
+        print(numof_noise_only,numof_pulses)
         #numof_pe_observed=len(pe_observed)
         pourcentage_of_noise=100*numof_noise_only/numof_total_pulses
 
