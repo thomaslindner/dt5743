@@ -300,7 +300,7 @@ class hdf5_read:
         #pe_observed=list(filter(lambda x: x>2350, min_pulses))
         numof_noise_only=len(noise_only)
         numof_total_pulses=len(min_pulses)
-        print(numof_noise_only,numof_pulses)
+        print(numof_noise_only,numof_total_pulses)
         #numof_pe_observed=len(pe_observed)
         pourcentage_of_noise=100*numof_noise_only/numof_total_pulses
 
@@ -361,4 +361,4 @@ test=hdf5_read(fname)
 #test.full_scan()
 #test.temp_vs_min(plot_title)
 #test.waveform_display(20)
-pe_l=test.pe_levels()
+test.pe_levels()
