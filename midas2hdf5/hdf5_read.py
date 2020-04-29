@@ -135,6 +135,25 @@ class hdf5_read:
         creates a heat map of detection efficiency for every
         point in MIDAS test stand scan
         '''
+        #magma_r.colors gives us the values below
+        reversed_magma=[[0.987053, 0.991438, 0.749504, 1.00000],
+                        [0.995131, 0.827052, 0.585701, 1.00000],
+                        [0.996341, 0.660969, 0.451160, 1.00000],
+                        [0.979645, 0.491014, 0.367783, 1.00000],
+                        [0.913354, 0.330052, 0.382563, 1.00000],
+                        [0.786212, 0.241514, 0.450184, 1.00000],
+                        [0.639216, 0.189921, 0.494150, 1.00000],
+                        [0.494258, 0.141462, 0.507988, 1.00000],
+                        [0.347636, 0.0829460, 0.494121, 1.00000],
+                        [0.198177, 0.0638620, 0.404009, 1.00000],
+                        [0.0697640, 0.0497260, 0.193735, 1.00000],
+                        [0.00146200, 0.000466000, 0.013866, 1.00000]]
+
+        white = np.array([0, 0, 0, 0])
+        reversed_magma[:1, :] = white
+        newcmp = ListedColormap(reversed_magma)
+
+        #double check this only makes exactly zero = white
 
         def calc_cutoff():
             pedastal=max(y_hist)#yhist might be wrong
@@ -247,8 +266,10 @@ class hdf5_read:
             #color_map.set_cmap("Blues_r")
             #plt.colorbar()
 
+            #i cant find where other cmap was specified so im doing it right in imshow
+
             #plt.imshow(Z, cmap=plt.cm.get_cmap(name='magma'), interpolation='nearest', extent=[0,10,0,10]) #make extent dynamic later
-            plt.imshow(Z, interpolation='nearest', extent=[0,10,0,10])
+            plt.imshow(Z, cmap=newcmp, interpolation='nearest', extent=[0,10,0,10])
             plt.colorbar()
             plt.xlabel('X positon [m]')
             plt.ylabel('Y positon [m]')
@@ -298,7 +319,7 @@ class hdf5_read:
 
         #str_toprint1=str(''.join(["bottom of noise",str(noise_cutoff)]))
         #print(str_toprint1)
-        
+
         noise_only=list(filter(lambda x: x>=noise_cutoff, min_pulses)) #shouldnt it be <
         #pe_observed=list(filter(lambda x: x>2350, min_pulses))
         numof_noise_only=len(noise_only)
@@ -307,7 +328,7 @@ class hdf5_read:
         #numof_pe_observed=len(pe_observed)
         pourcentage_of_noise=100*numof_noise_only/numof_total_pulses
 
-        str_toprint2=str(''.join(["percentage of triggers with no P.E. pulses in them: ", str(pourcentage_of_noise), "%"]))
+        str_toprint=str(''.join(["percentage of triggers with no P.E. pulses in them: ", str(pourcentage_of_noise), "%"]))
         print(str_toprint)
 
         #if 46.8<pourcentage_of_noise<100:#make this more dybnamic like single pourcentage +10
