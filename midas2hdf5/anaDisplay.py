@@ -1,3 +1,7 @@
+# Waveform display from HDF5 files
+# Ashley Ferreira
+# April 2020
+
 import sys
 import numpy as np
 import h5py
