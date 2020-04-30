@@ -149,11 +149,13 @@ class hdf5_read:
                         [0.0697640, 0.0497260, 0.193735, 1.00000],
                         [0.00146200, 0.000466000, 0.013866, 1.00000]])
 
-        white = np.array([0, 0, 0, 0])
-        reversed_magma[:1, :] = white
+        #white = np.array([0, 0, 0, 0])
+        #reversed_magma[:1, :] = white
         newcmp = ListedColormap(reversed_magma)
+        newcmp.set_bad(color='w')#but now you need to mask the values
 
         #double check this only makes exactly zero = white
+        #use set bad?
 
         def calc_cutoff():
             pedastal=max(y_hist)#yhist might be wrong
@@ -193,33 +195,46 @@ class hdf5_read:
                         dset=group[data_set_name]
                         #min_pulses.append(np.min(data_set))
                         #read in SCAN vals
-                        k=list(dset.attrs.keys())
-                        v=list(dset.attrs.values())
-                        ind=k.index("position")
-                        p=v[ind]
-                        #pos=dset.attrs["position"]
-                        scan_vals.append(p)
+
+                        #temp commented out
+                        #k=list(dset.attrs.keys())
+                        #v=list(dset.attrs.values())
+                        #ind=k.index("position")
+                        #p=v[ind]
+                        moto_exists=dset.attrs["motors running"]
+
+                        if moto_exists:
+                            pos=dset.attrs["moto position"]
+                        else:
+                            pos=dset.attrs["scn position"]
+
+                        scan_vals.append(pos)
 
             #scan_vals=list(map(float, scan_vals))
             #scan_vals.sort()
 
-            return scan_vals
+            return moto_exists, scan_vals
 
 
-        def detection_eff():
+        def detection_eff():#change structure based on this variable, you could just use size of scan and make a mesh
             i=0
             x_pos=[]
             y_pos=[]
             collective=[]
             temp_lst=[]
-            old_pos=0
+
+            if moto_exists:
+                old_pos=[]
+            else:
+                old_pos=0
+
             for pos in scan_vals:
                 if pos == old_pos:
                     temp_lst.append(min_pulses[i])
 
                 else:
-                    x_pos.append(old_pos)
-                    y_pos.append(old_pos)
+                    x_pos.append(old_pos[0])
+                    y_pos.append(old_pos[1])
 
                     collective.append([old_pos,temp_lst])
                     temp_lst=[]
@@ -228,8 +243,9 @@ class hdf5_read:
                 i+=1
                 old_pos=pos
 
-            x_pos=list(map(lambda x: x//10, x_pos))
-            y_pos=list(map(lambda y: y%10, y_pos))
+            if not(moto_exists):
+                x_pos=list(map(lambda x: x//10, x_pos))
+                y_pos=list(map(lambda y: y%10, y_pos))
 
             d_eff_list=[]
 
@@ -255,8 +271,9 @@ class hdf5_read:
 
 
         def plotting():
+
             xl=np.linspace(0,10,10)
-            yl=np.linspace(0,10,10)
+            yl=np.linspace(0,10,10)#generalize this part
             #xl,yl=np.meshgrid(x,y)
             xl,yl=np.meshgrid(xl,yl)
 
@@ -286,12 +303,18 @@ class hdf5_read:
         # move non-functions down
         #scan_vals = position_vals()
         print("2/4")
-        scan_vals=position_vals()
+        moto_exists, scan_vals=position_vals()
         print("3/4")
         d_eff_l, x, y = detection_eff()
 
         hdf5_file.close()
         print("4/4")
+
+        #mention that you set nan to 0?
+        for val in d_eff_l:
+            if val == 0:
+                val = np.nan
+
         plotting()
 
         #arr = []
