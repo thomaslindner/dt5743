@@ -224,28 +224,44 @@ class hdf5_read:
             temp_lst=[]
 
             if moto_exists:
-                old_pos=[]
+                old_pos=[0,0]
+                for pos in scan_vals:
+                    if pos[0] == old_pos[0] and pos[1]==old_pos[1]:#fix to have x and y
+                        temp_lst.append(min_pulses[i])
+
+                    else:
+                        x_pos.append(old_pos[0])#blank list rn though, keep in mind it might not always start at 0,0, but why did it even go where
+                            #maybe it returns string FALSE which is treeted like bool true
+                        y_pos.append(old_pos[1])
+
+                        collective.append([old_pos,temp_lst])
+                        temp_lst=[]
+                        temp_lst.append(min_pulses[i])
+
+                    i+=1
+                    old_pos=pos
+
+
             else:
                 old_pos=0
+                for pos in scan_vals:
+                    if pos == old_pos:
+                        temp_lst.append(min_pulses[i])
 
-            for pos in scan_vals:
-                if pos == old_pos:
-                    temp_lst.append(min_pulses[i])
+                    else:
+                        x_pos.append(old_pos)
+                        y_pos.append(old_pos)
 
-                else:
-                    x_pos.append(old_pos[0])
-                    y_pos.append(old_pos[1])
+                        collective.append([old_pos,temp_lst])
+                        temp_lst=[]
+                        temp_lst.append(min_pulses[i])
 
-                    collective.append([old_pos,temp_lst])
-                    temp_lst=[]
-                    temp_lst.append(min_pulses[i])
+                    i+=1
+                    old_pos=pos
 
-                i+=1
-                old_pos=pos
-
-            if not(moto_exists):
                 x_pos=list(map(lambda x: x//10, x_pos))
                 y_pos=list(map(lambda y: y%10, y_pos))
+
 
             d_eff_list=[]
 
@@ -304,6 +320,7 @@ class hdf5_read:
         #scan_vals = position_vals()
         print("2/4")
         moto_exists, scan_vals=position_vals()
+        print(moto_exists, type(moto_exists))
         print("3/4")
         d_eff_l, x, y = detection_eff()
 
