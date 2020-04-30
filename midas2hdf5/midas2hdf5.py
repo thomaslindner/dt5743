@@ -47,13 +47,13 @@ counter=0
 latest_pos=0
 latest_temp=0
 pos=0
-
+moto_exists=False
 # Iterate over all events in MIDAS file
 # as we read each event, we write it to our .hfd5 file
 while event:
     # Create hdf5 groups to store information of each event
     #grp=f_hdf5.create_group("".join(["Event #",str(event.header.serial_number)]))
-    counter+=1
+    counter+=1#counter hasnt been continue on fs47
     grp=f_hdf5.create_group("".join(["Event #",str(counter)]))
 
     bank_names = ", ".join(b.name for b in event.banks.values())
@@ -76,8 +76,13 @@ while event:
         if bank_name=="TEMP":
             latest_temp=bank.data
 
-        if bank_name=="SCAN":
-            latest_pos=float(bank.data[1])
+        if bank_name=="MOTO":
+            #store x and y
+            moto_exists=True
+            moto_pos=[bank.data[0],bank.data[1]]
+
+        elif bank_name=="SCAN":
+            scan_pos=float(bank.data[1])
             #pos+=1
             #print(pos)
             #print(latest_pos)#this num is not stored into metadata
@@ -101,8 +106,15 @@ while event:
             dset.attrs["temp"]=latest_temp
             #print(latest_pos)
             #dset.attrs["position"]=latest_pos #will be a pixilated scan
-            dset.attrs["position"]=latest_pos
-            print(dset.attrs["position"])
+            #only add these if they exist for moto
+            if moto_exists:
+                dset.attrs["motors running"]=True
+                dset.attrs["moto position"]=moto_pos
+            else:
+                dset.attrs["motors running"]=False
+
+            dset.attrs["scan position"]=scan_pos
+            #next: get midas time from file header
             #dest.attrs["time stamp"]=datetime.datetime.now() # change to midas
             #dset.attrs["laser settings"]=getLaser()
 
