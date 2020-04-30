@@ -18,7 +18,7 @@ import numpy as np
 import h5py
 
 sys.path.append("/home/mpmttest/online/dt5743/midas2hdf5")
-import a_TDT743_decoder
+import TDT743_decoder
 from datetime import date, datetime
 
 
@@ -78,6 +78,16 @@ while event:
 
         if bank_name=="MOTO":
             #store x and y
+            print("A MOTO BANK WAS FOUND")
+            print("A MOTO BANK WAS FOUND")
+            print("A MOTO BANK WAS FOUND")
+            print("A MOTO BANK WAS FOUND")
+            print("A MOTO BANK WAS FOUND")
+            print("A MOTO BANK WAS FOUND")
+            print("A MOTO BANK WAS FOUND")
+            print("A MOTO BANK WAS FOUND")
+            print("A MOTO BANK WAS FOUND")
+            print("A MOTO BANK WAS FOUND")
             moto_exists=True
             moto_pos=[bank.data[0],bank.data[1]]
 
@@ -107,7 +117,7 @@ while event:
             #print(latest_pos)
             #dset.attrs["position"]=latest_pos #will be a pixilated scan
             #only add these if they exist for moto
-            if moto_exists:
+            if moto_exists: #this is giving true when there doesnt seem to be moto?
                 dset.attrs["motors running"]=True
                 dset.attrs["moto position"]=moto_pos
             else:
