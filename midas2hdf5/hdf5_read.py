@@ -136,7 +136,7 @@ class hdf5_read:
         point in MIDAS test stand scan
         '''
         #magma_r.colors gives us the values below
-        reversed_magma=[[0.987053, 0.991438, 0.749504, 1.00000],
+        reversed_magma=np.array([[0.987053, 0.991438, 0.749504, 1.00000],
                         [0.995131, 0.827052, 0.585701, 1.00000],
                         [0.996341, 0.660969, 0.451160, 1.00000],
                         [0.979645, 0.491014, 0.367783, 1.00000],
@@ -147,7 +147,7 @@ class hdf5_read:
                         [0.347636, 0.0829460, 0.494121, 1.00000],
                         [0.198177, 0.0638620, 0.404009, 1.00000],
                         [0.0697640, 0.0497260, 0.193735, 1.00000],
-                        [0.00146200, 0.000466000, 0.013866, 1.00000]]
+                        [0.00146200, 0.000466000, 0.013866, 1.00000]])
 
         white = np.array([0, 0, 0, 0])
         reversed_magma[:1, :] = white
@@ -257,7 +257,8 @@ class hdf5_read:
         def plotting():
             xl=np.linspace(0,10,10)
             yl=np.linspace(0,10,10)
-            xl,yl=np.meshgrid(x,y)
+            #xl,yl=np.meshgrid(x,y)
+            xl,yl=np.meshgrid(xl,yl)
 
             Z=np.resize(d_eff_l,xl.shape)
 
@@ -377,13 +378,22 @@ class hdf5_read:
 
 
 fname=sys.argv[1]
+function=sys.argv[2]
 #plot_title=sys.argv[2]
 #bins=sys.argv[3]
 
 #test=hdf5_read("".join([writename,"ScanEvents"]))
-test=hdf5_read(fname)
-#test.min_vals_histo() # get binning done automatically
-#test.full_scan()
+obj=hdf5_read(fname)
+
+if function=='histogram':
+    obj.min_vals_histo()
+elif function=='scan':
+    obj.full_scan()
+elif function=='pelevel':
+    obj.pe_levels()
+else:
+    print("Not a valid function")
+
 #test.temp_vs_min(plot_title)
 #test.waveform_display(20)
-test.pe_levels()
+#test.pe_levels()
