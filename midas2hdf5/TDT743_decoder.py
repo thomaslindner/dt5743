@@ -4,8 +4,6 @@
 #
 # Edits made by Ashley Ferreira, Feb 2020
 
-# chaged so it only gives you indiv pmt data right now
-
 import numpy as np
 
 
@@ -26,30 +24,18 @@ class TDT743_decoder:
         important_bank=False
         decoded_arr=[]
 
-        #its constantly truggering thw wrong i dentifier below so this is commented out for now
-        #if self.data[0] != 0xa0000000: # memrory address? why does this have to be the first word? well its the identifier? just zero?
+        #if self.data[0] != 0xa0000000:
         #    print("First word has wrong identifier; first word = 0x", self.data[0])
         #    return important_bank, None, None, None, None, None
-
-        if self.name == "TEMP":
-            important_bank=True
-            # or no return as metadata? directly in the other one
-            # yeah for now this is handled in midas2hdf5
-            #position=self.data #to interpolate later
-
-        if self.name == "SCAN":
-            important_bank=True
-            #position=self.data
 
         # Decode DT5743 bank
         if self.name == "43FS":
             important_bank=True
 
-            # which one is the correct way of getting it? cpp just uses "GetChMask()"
+            # which one is the correct way? cpp just uses GetChMask()
             # grp_mask = (self.data[3] & 0xff)
             # group_mask = (self.data[3] & 0xff) + ((self.data[4] & 0xff000000) >> 16)
-            #
-            # just tried my way for now, confirm its .data[3]
+
             group_mask=3#int(str(self.data[3]),2)
 
             number_groups = 0
@@ -58,7 +44,7 @@ class TDT743_decoder:
                 if msk_str[i]=="1":
                     number_groups+=1
 
-            num_sample_per_group = (len(self.data) - 6)/ number_groups # 4 instead of 6 in cpp code,  header -> 4 words
+            num_sample_per_group = (len(self.data) - 6)/ number_groups
 
             #print("grp mask: %x sample_per_group %i " % (group_mask,num_sample_per_group))
 
@@ -69,18 +55,17 @@ class TDT743_decoder:
             #if group_mask == 3: # expand/generalize this later, once you start using more inputs
                 #print("group_mask = 0x3, this means group 0 and 1 are participating (channel 0 and 1 are taking input)")
 
-            # try to get samples for first and second channel
+            # get samples for first and second channel
             samples_chan0 = []
             samples_chan1 = []
             for i in range(0, num_sample_per_group-1):
                 if i % 17 != 0:  # skip bogus data in every 17th sample.
-                    # don't completely understand what is happening below -ashley
                     samples_chan0.append((self.data[6+i] & 0xfff))
                     samples_chan1.append(((self.data[6+i] & 0xfff000) >> 12))
             #print("Channel 0 samples:", samples_chan0)
             #print("Channel 1 samples:", samples_chan1)
 
-            #decoded_arr.append(samples_chan0)#samples_chan1])#these look like very promising numbers
+            #decoded_arr.append(samples_chan0)#samples_chan1])
             #decoded_arr=np.array(decoded_arr).astype(np.float)
 
             ch0_arr=np.array(samples_chan0)#.astype(np.float)
