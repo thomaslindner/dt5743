@@ -3,68 +3,110 @@
 # Thomas Lindner
 # Dec 2019
 #
-import sys
-#sys.path.append("/Users/lindner/packages/midas/python")
-sys.path.append("/home/mpmttest/packages/midas/python")
-#import midas
-import midas.file_reader
+# Edits made by Ashley Ferreira, Feb 2020
+# changes made: decoder in new class, now program
+# writes to hdf5 file as it reads from midas
+#
+# Writes to .hdf5 in the following way:
+# group=event / dataset=bank
 
-# HDF5
+
+# print statements commented out for now so code goes faster in cmd
+
+import sys
+import numpy as np
 import h5py
 
-import sys
+sys.path.append("/home/mpmttest/online/dt5743/midas2hdf5")
+import a_TDT743_decoder
+from datetime import date, datetime
 
+
+sys.path.append("/home/mpmttest/packages/midas/python")
+import midas.file_reader
+
+# call this python file in cmd as follows:
+# python a_midas2hdf5 ~/online/data/run_____sub000.mid.gz "run___"
+# fill in the blanks with run number from MIDAS
 filename = sys.argv[1]
+writename = sys.argv[2]
 
-
-# Open our file
+# Open MIDAS file
 mfile = midas.file_reader.MidasFile(filename)
 
 event = mfile.read_next_event()
 
-# We can simply iterate over all events in the file
-#for event in mfile.read:
+# Create an .hdf5 file, and open it for writting
+f_hdf5=h5py.File("".join([writename,"ScanEvents.hdf5"]),"w")
+#f_hdf5=h5py.File("".join([str(datetime.now()),"ScanEvents.hdf5"]),"w")
 
+latest_temp=0 #or a list?
+#latest_pos=0 or set it to a list?
+counter=0
+
+latest_pos=0
+latest_temp=0
+pos=0
+
+# Iterate over all events in MIDAS file
+# as we read each event, we write it to our .hfd5 file
 while event:
+    # Create hdf5 groups to store information of each event
+    #grp=f_hdf5.create_group("".join(["Event #",str(event.header.serial_number)]))
+    counter+=1
+    grp=f_hdf5.create_group("".join(["Event #",str(counter)]))
+
     bank_names = ", ".join(b.name for b in event.banks.values())
-    print("Event # %s of type ID %s contains banks %s" % (event.header.serial_number,
-                                                          event.header.event_id, bank_names))
-    
+    #print("Event # %s of type ID %s contains banks %s" % (event.header.serial_number,event.header.event_id, bank_names))
+
+    # add relevant metadata to hdf5 group (attributes)
+    grp.attrs["id"]=event.header.event_id
+    grp.attrs["bank names"]=bank_names
+    grp.attrs["number of banks"]=len(bank_names)
+    grp.attrs["event time tag"]=0 #take from header -> look at midas documentation now
+
+    hit_first=False
     for bank_name, bank in event.banks.items():
-        if len(bank.data):
-            print("    The first entry in bank %s is %x length: %i %s" % (bank_name, bank.data[0],len(bank.data),
-                                                                          type(bank.data[0]).__name__))
+        # print first entry in the bank
+        if hit_first==False:
+            hit_first=True
+            print("The first entry in bank %s is %x length: %i %s"
+                % (bank_name, bank.data[0],len(bank.data),type(bank.data[0]).__name__))
+
+        if bank_name=="TEMP":
+            latest_temp=bank.data
+
+        if bank_name=="SCAN":
+            latest_pos=float(bank.data[1])
+            #pos+=1
+            #print(pos)
+            #print(latest_pos)#this num is not stored into metadata
+
+        #if bank_name=="43SL":
 
 
-        # Decode DT5743 bank (move this to separate python class eventually
-        if bank_name == "43FS":
+        if bank_name=="43FS":
+            file_todecode=TDT743_decoder.TDT743_decoder(bank.data, bank_name)
 
-            grp_mask = (bank.data[3] & 0xff);
-            number_groups = 2  # do this calculation correctly            
-            num_sample_per_group = (len(bank.data) - 6)/ number_groups
-            
+            important_bank, ch0_arr, ch1_arr, number_groups, num_sample_per_group, group_mask=file_todecode.decoder()
 
-            print("grp mask: %x sample_per_group %i " % (grp_mask,num_sample_per_group))
-            
-            print("%x %x %x %x %x %x" % (bank.data[2],bank.data[3],bank.data[4],bank.data[5],
-                                         bank.data[6],bank.data[7]))
+            dset=grp.create_dataset("ch0", ch0_arr.shape, data=ch0_arr)
+            #dset=grp.create_dataset("ch1", ch1_arr.shape, data=ch1_arr)
 
-            # Do some simple decoding...
-            group_mask = (bank.data[3] & 0xff) + ((bank.data[4] & 0xff000000) >> 16);
+            # add relevant metadata to data set (attributes)
+            dset.attrs["name"]=bank_name
+            dset.attrs["number of groups"]=number_groups # will help with slicing
+            dset.attrs["samples per group"]=num_sample_per_group # will help with slicing
+            dset.attrs["group mask"]=group_mask
+            dset.attrs["temp"]=latest_temp
+            #print(latest_pos)
+            #dset.attrs["position"]=latest_pos #will be a pixilated scan
+            dset.attrs["position"]=latest_pos
+            print(dset.attrs["position"])
+            #dest.attrs["time stamp"]=datetime.datetime.now() # change to midas
+            #dset.attrs["laser settings"]=getLaser()
 
-            # try to get samples for first and second channel
-            samples_chan0 = [];
-            samples_chan1 = [];
-            for i in range(0, num_sample_per_group-1):
-                if i % 17 != 0:  # skip bogus data in every 17th sample.
-                    samples_chan0.append((bank.data[6+i] & 0xfff))
-                    samples_chan1.append(((bank.data[6+i] & 0xfff000) >> 12))
-            print "Channel 0 samples:"
-            print samples_chan0
-            print "Channel 1 samples:"
-            print samples_chan1
-            
-            
-
-        
+#event number labels arent continous
     event = mfile.read_next_event()
+
+f_hdf5.close()
