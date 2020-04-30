@@ -9,7 +9,7 @@
 import numpy as np
 
 
-class a_TDT743_decoder:
+class TDT743_decoder:
     '''
     used in a_midas2hdf5.py to convert from MIDAS format to
     key information needed to write to hdf5 file
