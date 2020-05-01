@@ -338,9 +338,9 @@ class hdf5_read:
         print("3/4")
 
         #mention that you set nan to 0?
-        for val in d_eff_l:
-            if val == 0:
-                val = np.nan
+        for i in range(len(d_eff_l)):
+            if d_eff_l[i] == 0.00:
+                d_eff_l[i] = np.nan
 
 
 
@@ -447,7 +447,3 @@ elif function=='pelevel':
     obj.pe_levels()
 else:
     print("Not a valid function")
-
-#test.temp_vs_min(plot_title)
-#test.waveform_display(20)
-#test.pe_levels()
