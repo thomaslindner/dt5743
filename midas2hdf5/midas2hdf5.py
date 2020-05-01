@@ -59,7 +59,7 @@ while event:
     grp.attrs["bank names"]=bank_names
     grp.attrs["number of banks"]=len(bank_names)
     grp.attrs["serial number"]=event.header.serial_number
-    grp.attrs["event time tag"]=event.header.time_stamp # time in seconds since 1.1.1970 00:00:00 UTC
+    grp.attrs["event time tag"]=event.header.timestamp # time in seconds since 1.1.1970 00:00:00 UTC
 
     hit_first=False
     for bank_name, bank in event.banks.items():
