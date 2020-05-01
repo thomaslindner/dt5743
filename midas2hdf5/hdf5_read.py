@@ -298,14 +298,17 @@ class hdf5_read:
 
             #xl=np.linspace(0,10,10)
             #yl=np.linspace(0,10,10)#generalize this part
-            xl,yl=np.meshgrid(x,y)
+            xl,yl=np.meshgrid(x,y)#maybe you dont need a meshgrid
+            #how to set it up? this seems hard
             #xl,yl=np.meshgrid(xl,yl)
 
             #you wanna put it on a grid so you go
             #d_eff_l
             #Z=np.resize(d_eff_l,)
-
-            Z=np.resize(d_eff_l,xl.shape)
+            side=sqrt(len(d_eff_l))#split this length into its sqrt?
+            Z=np.resize(d_eff_l,(side,side))
+            #print(d_eff_l.shape)
+            #Z=np.resize(d_eff_l,xl.shape)
             #is deffl the same length as this?
             #Z=np.random.random((10,10))
 
