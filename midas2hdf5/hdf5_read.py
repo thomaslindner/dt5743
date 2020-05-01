@@ -40,7 +40,7 @@ class hdf5_read:
         #self.individual_pmt=data_array[1]
         #loop to get vals before close, bring reading part up here
 
-    def min_vals_histo(self):
+    def min_vals_histo(self, save_plot):
         '''
         makes historgram of pulses
         with bin number generated automatically
@@ -69,14 +69,15 @@ class hdf5_read:
         hdf5_file.close()
         # do you need the underscore?
         #y_hist, x_hist, patches = plt.hist(min_pulses, bins='auto')
-        x_hist, y_hist, patches = plt.hist(min_pulses, bins=100)#changed x and y order
-        #dk = plt.hist(min_pulses, bins='auto')
-        #print(dk)
-        plt.yscale('log')
-        plt.xlabel('Waveform Minimum Value (ADC)')
-        plt.ylabel('Frequency')
-        plt.title(''.join([self.file_name,' histogram']))
-        plt.savefig(''.join([self.file_name,'_histogram']))
+        if save_plot:
+            x_hist, y_hist, patches = plt.hist(min_pulses, bins=100)#changed x and y order
+            #dk = plt.hist(min_pulses, bins='auto')
+            #print(dk)
+            plt.yscale('log')
+            plt.xlabel('Waveform Minimum Value (ADC)')
+            plt.ylabel('Frequency')
+            plt.title(''.join([self.file_name,' histogram']))
+            plt.savefig(''.join([self.file_name,'_histogram']))
 
         #return x_hist, y_hist, min_pulses#perhaps make it just return 2 max vals and min pulses?
         #return the pedastal val="" and cutoff of single pe peak and then pulse vals
@@ -293,25 +294,25 @@ class hdf5_read:
 
             #xl=np.linspace(0,10,10)
             #yl=np.linspace(0,10,10)#generalize this part
-            #xl,yl=np.meshgrid(x,y)
+            xl,yl=np.meshgrid(x,y)
             #xl,yl=np.meshgrid(xl,yl)
 
             #you wanna put it on a grid so you go
             #d_eff_l
             #Z=np.resize(d_eff_l,)
 
-            #Z=np.resize(d_eff_l,xl.shape)
+            Z=np.resize(d_eff_l,xl.shape)
             #is deffl the same length as this?
-            Z=np.random.random((10,10))
+            #Z=np.random.random((10,10))
 
             #color_map = plt.imshow(x)
             #color_map.set_cmap("Blues_r")
             #plt.colorbar()
 
             #i cant find where other cmap was specified so im doing it right in imshow
-
+            plt.figure(figsize=(5, 5))
             #plt.imshow(Z, cmap=plt.cm.get_cmap(name='magma'), interpolation='nearest', extent=[0,10,0,10]) #make extent dynamic later
-            plt.imshow(Z, cmap=newcmp, interpolation='nearest', extent=[0,10,0,10])#make extent dynamic
+            plt.imshow(Z, cmap=newcmp, interpolation='nearest', extent=[min(x),max(x),min(y),max(y)])#make extent dynamic
             plt.colorbar()
             plt.xlabel('X positon [m]')
             plt.ylabel('Y positon [m]')
@@ -322,14 +323,14 @@ class hdf5_read:
         hdf5_file=h5py.File(''.join([self.file_name,'ScanEvents', '.hdf5']), 'r')
         print("progress:")
         #min_pulses=[] #get this stuff returned from histo?
-        y_hist, min_pulses = self.min_vals_histo()
+        y_hist, min_pulses = self.min_vals_histo(False)
         #cutoff = calc_cutoff() #stop using local and global names twice
         # move non-functions down
         #scan_vals = position_vals()
         print("1/4")
         moto_exists, scan_vals=position_vals()
         moto_exists=False #this is done temporarily to debug SCAN
-        print(moto_exists, type(moto_exists))
+        #print(moto_exists, type(moto_exists))
         print("2/4")
         d_eff_l, x, y = detection_eff()
 
@@ -343,10 +344,10 @@ class hdf5_read:
 
 
 
-        #plotting()
+        plotting()
         #Z=np.random.random((10,10))
-        plotting_helper.heat_plot()
-        print("4/4 \n plot saved in midas2hdf5 folder")
+        #plotting_helper.heat_plot()
+        print("4/4 \nplot saved in midas2hdf5 folder")
         #arr = []
         #for i in range(len(x_pos)):
             #arr.append([x_pos[i],y_pos[i],d_eff_list[i]])
@@ -439,7 +440,7 @@ function=sys.argv[2]
 obj=hdf5_read(fname)
 
 if function=='histogram':
-    obj.min_vals_histo()
+    obj.min_vals_histo(True)
 elif function=='scan':
     obj.full_scan()
 elif function=='pelevel':
