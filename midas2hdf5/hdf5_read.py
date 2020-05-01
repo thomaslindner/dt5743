@@ -17,7 +17,7 @@ from matplotlib.colors import ListedColormap, LinearSegmentedColormap
 #use notebook to get list of colors for magma_r and then initialize
 #magma_r here
 
-import plotting_helper
+#import plotting_helper
 
 #from matplotlib.colors import LinearSegmentedColormap
 
@@ -69,8 +69,12 @@ class hdf5_read:
         hdf5_file.close()
         # do you need the underscore?
         #y_hist, x_hist, patches = plt.hist(min_pulses, bins='auto')
+
+        x_hist, y_hist, patches = plt.hist(min_pulses, bins=100)
+        plt.figure()
+
         if save_plot:
-            x_hist, y_hist, patches = plt.hist(min_pulses, bins=100)#changed x and y order
+            #changed x and y order
             #dk = plt.hist(min_pulses, bins='auto')
             #print(dk)
             plt.yscale('log')
