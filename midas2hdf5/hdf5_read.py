@@ -17,6 +17,7 @@ from matplotlib.colors import ListedColormap, LinearSegmentedColormap
 #use notebook to get list of colors for magma_r and then initialize
 #magma_r here
 
+import plotting_helper
 
 #from matplotlib.colors import LinearSegmentedColormap
 
@@ -201,12 +202,14 @@ class hdf5_read:
                         #v=list(dset.attrs.values())
                         #ind=k.index("position")
                         #p=v[ind]
-                        moto_exists=dset.attrs["motors running"]
+
+                        #moto_exists=dset.attrs["motors running"]
+                        moto_exists=False#temporary for debugging
 
                         if moto_exists:
                             pos=dset.attrs["moto position"]
                         else:
-                            pos=dset.attrs["scn position"]
+                            pos=dset.attrs["scan position"]
 
                         scan_vals.append(pos)
 
@@ -244,7 +247,7 @@ class hdf5_read:
 
             else:
                 old_pos=0
-                for pos in scan_vals:
+                for pos in scan_vals:#looks to be arrays in scan vals?
                     if pos == old_pos:
                         temp_lst.append(min_pulses[i])
 
@@ -288,13 +291,18 @@ class hdf5_read:
 
         def plotting():
 
-            xl=np.linspace(0,10,10)
-            yl=np.linspace(0,10,10)#generalize this part
+            #xl=np.linspace(0,10,10)
+            #yl=np.linspace(0,10,10)#generalize this part
             #xl,yl=np.meshgrid(x,y)
-            xl,yl=np.meshgrid(xl,yl)
+            #xl,yl=np.meshgrid(xl,yl)
 
-            Z=np.resize(d_eff_l,xl.shape)
+            #you wanna put it on a grid so you go
+            #d_eff_l
+            #Z=np.resize(d_eff_l,)
 
+            #Z=np.resize(d_eff_l,xl.shape)
+            #is deffl the same length as this?
+            Z=np.random.random((10,10))
 
             #color_map = plt.imshow(x)
             #color_map.set_cmap("Blues_r")
@@ -303,7 +311,7 @@ class hdf5_read:
             #i cant find where other cmap was specified so im doing it right in imshow
 
             #plt.imshow(Z, cmap=plt.cm.get_cmap(name='magma'), interpolation='nearest', extent=[0,10,0,10]) #make extent dynamic later
-            plt.imshow(Z, cmap=newcmp, interpolation='nearest', extent=[0,10,0,10])
+            plt.imshow(Z, cmap=newcmp, interpolation='nearest', extent=[0,10,0,10])#make extent dynamic
             plt.colorbar()
             plt.xlabel('X positon [m]')
             plt.ylabel('Y positon [m]')
@@ -312,28 +320,33 @@ class hdf5_read:
 
 
         hdf5_file=h5py.File(''.join([self.file_name,'ScanEvents', '.hdf5']), 'r')
-        print("1/4")
+        print("progress:")
         #min_pulses=[] #get this stuff returned from histo?
-        y_hist, min_pulses = self.min_vals_histo()#might not need to enter global variable
+        y_hist, min_pulses = self.min_vals_histo()
         #cutoff = calc_cutoff() #stop using local and global names twice
         # move non-functions down
         #scan_vals = position_vals()
-        print("2/4")
+        print("1/4")
         moto_exists, scan_vals=position_vals()
+        moto_exists=False #this is done temporarily to debug SCAN
         print(moto_exists, type(moto_exists))
-        print("3/4")
+        print("2/4")
         d_eff_l, x, y = detection_eff()
 
         hdf5_file.close()
-        print("4/4")
+        print("3/4")
 
         #mention that you set nan to 0?
         for val in d_eff_l:
             if val == 0:
                 val = np.nan
 
-        plotting()
 
+
+        #plotting()
+        Z=np.random.random((10,10))
+        plotting_helper.heat_plot(Z)
+        print("4/4 \n plot saved in midas2hdf5 folder")
         #arr = []
         #for i in range(len(x_pos)):
             #arr.append([x_pos[i],y_pos[i],d_eff_list[i]])
