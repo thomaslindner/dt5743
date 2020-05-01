@@ -224,7 +224,7 @@ class hdf5_read:
             return moto_exists, scan_vals
 
 
-        def detection_eff():#change structure based on this variable, you could just use size of scan and make a mesh
+        def detection_eff():
             i=0
             x_pos=[]
             y_pos=[]
@@ -254,7 +254,7 @@ class hdf5_read:
                 old_pos=0
                 for pos in scan_vals:#looks to be arrays in scan vals?
                     if pos == old_pos:
-                        temp_lst.append(min_pulses[i])
+                        temp_lst.append(min_pulses[i])#you are going through i
 
                     else:
                         x_pos.append(old_pos)
@@ -280,7 +280,7 @@ class hdf5_read:
                 numof_pulses=len(pulse_list)
                 for pulse in pulse_list:
                         #if pulse<cutoff:
-                    if pulse>2080: #temporary because of 2048 issue
+                    if pulse>2080: #temporary because of 2048 issue FIX
                         #if pulse>cutoff:
                         hits+=1
 
@@ -288,7 +288,9 @@ class hdf5_read:
                     pulses=float(numof_pulses)
                     d_eff=hits1/pulses
                     d_eff_list.append(d_eff)
+                    print(d_eff)
 
+            print("length of d_eff_list",len(d_eff_l))
             d_eff_list.insert(0,0) #temporary
 
             return d_eff_list, x_pos, y_pos
@@ -305,7 +307,7 @@ class hdf5_read:
             #you wanna put it on a grid so you go
             #d_eff_l
             #Z=np.resize(d_eff_l,)
-            side=sqrt(len(d_eff_l))#split this length into its sqrt?
+            side=int(np.sqrt(len(d_eff_l)))#split this length into its sqrt?
             Z=np.resize(d_eff_l,(side,side))
             #print(d_eff_l.shape)
             #Z=np.resize(d_eff_l,xl.shape)
