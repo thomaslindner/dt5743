@@ -67,11 +67,10 @@ class hdf5_read:
         #print("min pulses",min_pulses)
 
         hdf5_file.close()
-        # do you need the underscore?
         #y_hist, x_hist, patches = plt.hist(min_pulses, bins='auto')
-
-        x_hist, y_hist, patches = plt.hist(min_pulses, bins=100)
-        plt.figure()
+        #print(len(min_pulses))
+        plt.figure()#you just had this afterwards
+        x_hist, y_hist, patches = plt.hist(min_pulses, bins='auto')
 
         if save_plot:
             #changed x and y order
@@ -169,16 +168,12 @@ class hdf5_read:
             pe_peak=y_hist.pop(ind)
             #define local functions for much of this stuff
             #is smaller actually correct here?
-            if without_ped>pedastal*0.95: #make this less arbirtrary, curve fit?
-                cutoff=(pedastal+without_ped)/2
-            else:
-                #find new cutoff
-                ind=y_hist.index(without_ped)
+            while pe_peak>pedastal*0.95:
+                ind=y_hist.index(pe_peak)
                 pe_peak=y_hist.pop(ind) #loop this?
 
-            calc_cutoff=(pedastal+pe_peak)/2
-
-            return calc_cutoff
+            cutoff=(pedastal+pe_peak)/2
+            return cutoff
 
 
         dataset_keys=[]
@@ -218,9 +213,9 @@ class hdf5_read:
 
                         scan_vals.append(pos)
 
-            #scan_vals=list(map(float, scan_vals))
-            #scan_vals.sort()
-
+            scan_vals=list(map(int, scan_vals))
+            scan_vals.sort()
+            print("scan val length",len(scan_vals))
             return moto_exists, scan_vals
 
 
@@ -280,17 +275,17 @@ class hdf5_read:
                 numof_pulses=len(pulse_list)
                 for pulse in pulse_list:
                         #if pulse<cutoff:
-                    if pulse>2080: #temporary because of 2048 issue FIX
+                    if pulse<cutoff: #temporary because of 2048 issue FIX
                         #if pulse>cutoff:
                         hits+=1
 
-                    hits1=float(hits)
-                    pulses=float(numof_pulses)
-                    d_eff=hits1/pulses
-                    d_eff_list.append(d_eff)
-                    print(d_eff)
+                hits1=float(hits)
+                pulses=float(numof_pulses)
+                d_eff=hits1/pulses
+                d_eff_list.append(d_eff)
+                #print(d_eff)
 
-            print("length of d_eff_list",len(d_eff_l))
+            print("length of d_eff_list",len(d_eff_list))#way too big
             d_eff_list.insert(0,0) #temporary
 
             return d_eff_list, x_pos, y_pos
@@ -333,7 +328,7 @@ class hdf5_read:
         print("progress:")
         #min_pulses=[] #get this stuff returned from histo?
         y_hist, min_pulses = self.min_vals_histo(False)
-        #cutoff = calc_cutoff() #stop using local and global names twice
+        cutoff = calc_cutoff() #stop using local and global names twice
         # move non-functions down
         #scan_vals = position_vals()
         print("1/4")
@@ -348,7 +343,7 @@ class hdf5_read:
 
         #mention that you set nan to 0?
         for i in range(len(d_eff_l)):
-            if d_eff_l[i] == 0.00:
+            if d_eff_l[i] == 0.0:
                 d_eff_l[i] = np.nan
 
 
@@ -378,7 +373,7 @@ class hdf5_read:
         four_pe_pourcentage=1.83
         five_pe_pourcentage=0.674
         #calculate the rest
-        y_hist, min_pulses = self.min_vals_histo()
+        y_hist, min_pulses = self.min_vals_histo(False)
         noise_cutoff=max(y_hist)-3#should be around 2350
 
         #str_toprint1=str(''.join(["bottom of noise",str(noise_cutoff)]))
@@ -433,7 +428,7 @@ class hdf5_read:
         elif (five_pe_pourcentage-0.2)<=pourcentage_of_noise<(five_pe_pourcentage+0.2):
             print("Five PE")
 
-        elif (five_pe_pourcentage+0.2)<=pourcentage_of_noise<=0:
+        elif (five_pe_pourcentage-0.2)>=pourcentage_of_noise>=0:#make sure all of these make sense
             print("Six or more PE")
 
         else:
