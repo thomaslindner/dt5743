@@ -5,4 +5,4 @@ import matplotlib.pyplot as plt
 
 def heat_plot(arr):
     plt.imshow(arr)
-    plt.show()
+    plt.savefig('test_detectionEfficency']))
