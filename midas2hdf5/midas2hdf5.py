@@ -11,8 +11,6 @@
 # group=event / dataset=bank
 
 
-# print statements commented out for now so code goes faster in cmd
-
 import sys
 import numpy as np
 import h5py
@@ -38,22 +36,19 @@ event = mfile.read_next_event()
 
 # Create an .hdf5 file, and open it for writting
 f_hdf5=h5py.File("".join([writename,"ScanEvents.hdf5"]),"w")
-#f_hdf5=h5py.File("".join([str(datetime.now()),"ScanEvents.hdf5"]),"w")
 
-latest_temp=0 #or a list?
-#latest_pos=0 or set it to a list?
+latest_temp=[]
 counter=0
 
-latest_pos=0
-latest_temp=0
-pos=0
+moto_pos=[]
+scan_pos=0
 moto_exists=False
+
 # Iterate over all events in MIDAS file
 # as we read each event, we write it to our .hfd5 file
 while event:
     # Create hdf5 groups to store information of each event
-    #grp=f_hdf5.create_group("".join(["Event #",str(event.header.serial_number)]))
-    counter+=1#counter hasnt been continue on fs47
+    counter+=1
     grp=f_hdf5.create_group("".join(["Event #",str(counter)]))
 
     bank_names = ", ".join(b.name for b in event.banks.values())
@@ -63,7 +58,8 @@ while event:
     grp.attrs["id"]=event.header.event_id
     grp.attrs["bank names"]=bank_names
     grp.attrs["number of banks"]=len(bank_names)
-    grp.attrs["event time tag"]=0 #take from header -> look at midas documentation now
+    grp.attrs["serial number"]=event.header.serial_number
+    grp.attrs["event time tag"]=event.header.time_stamp # time in seconds since 1.1.1970 00:00:00 UTC
 
     hit_first=False
     for bank_name, bank in event.banks.items():
@@ -76,31 +72,16 @@ while event:
         if bank_name=="TEMP":
             latest_temp=bank.data
 
-        if bank_name=="MOTO":
-            #store x and y
-            print("A MOTO BANK WAS FOUND")
-            print("A MOTO BANK WAS FOUND")
-            print("A MOTO BANK WAS FOUND")
-            print("A MOTO BANK WAS FOUND")
-            print("A MOTO BANK WAS FOUND")
-            print("A MOTO BANK WAS FOUND")
-            print("A MOTO BANK WAS FOUND")
-            print("A MOTO BANK WAS FOUND")
-            print("A MOTO BANK WAS FOUND")
-            print("A MOTO BANK WAS FOUND")
+        elif bank_name=="MOTO":
+            #store x and y motor postion
             moto_exists=True
             moto_pos=[bank.data[0],bank.data[1]]
 
         elif bank_name=="SCAN":
             scan_pos=float(bank.data[1])
-            #pos+=1
-            #print(pos)
-            #print(latest_pos)#this num is not stored into metadata
-
-        #if bank_name=="43SL":
 
 
-        if bank_name=="43FS":
+        elif bank_name=="43FS":
             file_todecode=TDT743_decoder.TDT743_decoder(bank.data, bank_name)
 
             important_bank, ch0_arr, ch1_arr, number_groups, num_sample_per_group, group_mask=file_todecode.decoder()
@@ -110,25 +91,19 @@ while event:
 
             # add relevant metadata to data set (attributes)
             dset.attrs["name"]=bank_name
-            dset.attrs["number of groups"]=number_groups # will help with slicing
-            dset.attrs["samples per group"]=num_sample_per_group # will help with slicing
+            dset.attrs["number of groups"]=number_groups
+            dset.attrs["samples per group"]=num_sample_per_group
             dset.attrs["group mask"]=group_mask
             dset.attrs["temp"]=latest_temp
-            #print(latest_pos)
-            #dset.attrs["position"]=latest_pos #will be a pixilated scan
-            #only add these if they exist for moto
-            if moto_exists: #this is giving true when there doesnt seem to be moto?
+
+            if moto_exists:
                 dset.attrs["motors running"]=True
                 dset.attrs["moto position"]=moto_pos
             else:
                 dset.attrs["motors running"]=False
 
             dset.attrs["scan position"]=scan_pos
-            #next: get midas time from file header
-            #dest.attrs["time stamp"]=datetime.datetime.now() # change to midas
-            #dset.attrs["laser settings"]=getLaser()
 
-#event number labels arent continous
     event = mfile.read_next_event()
 
 f_hdf5.close()
