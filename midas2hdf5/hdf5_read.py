@@ -70,7 +70,7 @@ class hdf5_read:
         #y_hist, x_hist, patches = plt.hist(min_pulses, bins='auto')
         #print(len(min_pulses))
         plt.figure()#you just had this afterwards
-        x_hist, y_hist, patches = plt.hist(min_pulses, bins='auto')
+        x_hist, y_hist, patches = plt.hist(min_pulses, bins=100)#bins='auto')
 
         if save_plot:
             #changed x and y order
@@ -130,7 +130,7 @@ class hdf5_read:
         plt.xlabel('Temperature Sensor Reading (Deg)')
         plt.ylabel('Waveform Minimum Value (ADC)')
         plt.title('Min PMT Pulse Val vs. Temp for ',title)
-        plt.savefig(title)#this won't change but try it to see bugs
+        plt.savefig(title)
         '''
         return None
 
@@ -154,23 +154,22 @@ class hdf5_read:
                         [0.0697640, 0.0497260, 0.193735, 1.00000],
                         [0.00146200, 0.000466000, 0.013866, 1.00000]])
 
-        #white = np.array([0, 0, 0, 0])
-        #reversed_magma[:1, :] = white
+
         newcmp = ListedColormap(reversed_magma)
-        newcmp.set_bad(color='w')#but now you need to mask the values
+        newcmp.set_bad(color='w')
 
-        #double check this only makes exactly zero = white
-        #use set bad?
 
-        def calc_cutoff():
-            pedastal=max(y_hist)#yhist might be wrong
-            ind=y_hist.index(pedastal)
-            pe_peak=y_hist.pop(ind)
+        def calc_cutoff(lst):
+            pedastal=max(lst)#yhist might be wrong
+            ind=lst.index(pedastal)
+            lst.pop(ind)
+            pe_peak=max(lst)
             #define local functions for much of this stuff
             #is smaller actually correct here?
-            while pe_peak>pedastal*0.95:
-                ind=y_hist.index(pe_peak)
-                pe_peak=y_hist.pop(ind) #loop this?
+            while pe_peak>pedastal*0.98:
+                ind=lst.index(pe_peak)
+                lst.pop(ind) #loop this?
+                pe_peak=max(lst)
 
             cutoff=(pedastal+pe_peak)/2
             return cutoff
@@ -328,7 +327,7 @@ class hdf5_read:
         print("progress:")
         #min_pulses=[] #get this stuff returned from histo?
         y_hist, min_pulses = self.min_vals_histo(False)
-        cutoff = calc_cutoff() #stop using local and global names twice
+        cutoff = calc_cutoff(list(y_hist)) #stop using local and global names twice
         # move non-functions down
         #scan_vals = position_vals()
         print("1/4")
