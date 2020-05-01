@@ -1,7 +1,7 @@
 # hdf5 file reader for mpmt test stand digitizer data
 # includes varius functions for plotting the data
 # Ashley Ferreira
-# March 2020
+# April 2020
 
 import sys
 import numpy as np
@@ -11,22 +11,10 @@ import matplotlib
 matplotlib.use('Agg')
 
 import matplotlib.pyplot as plt
-#print(plt.colormaps())
+
 from matplotlib import cm
 from matplotlib.colors import ListedColormap, LinearSegmentedColormap
-#use notebook to get list of colors for magma_r and then initialize
-#magma_r here
 
-#import plotting_helper
-
-#from matplotlib.colors import LinearSegmentedColormap
-
-#import colormaps as cmaps
-#plt.register_cmap(name='viridis', cmap=cmaps.viridis)
-#plt.set_cmap(cmaps.viridis)
-
-#plt.register_cmap(name='viridis', cmap=plt.cm.viridis)
-#plt.set_cmap(plt.cm.viridis)
 
 class hdf5_read:
     '''
@@ -35,22 +23,16 @@ class hdf5_read:
     '''
     def __init__(self, hdf5_file_name):
         self.file_name=hdf5_file_name
-        #self.bank_array=#you need to open groups, you need to decide on structure
-        #self.monitor_pmt=data_array[0]
-        #self.individual_pmt=data_array[1]
-        #loop to get vals before close, bring reading part up here
+
 
     def min_vals_histo(self, save_plot):
         '''
         makes historgram of pulses
         with bin number generated automatically
         '''
-        hdf5_file=h5py.File(''.join([self.file_name, 'ScanEvents', '.hdf5']), 'r') # you may specify file driver
+        hdf5_file=h5py.File(''.join([self.file_name, 'ScanEvents', '.hdf5']), 'r')
         min_pulses=[]
 
-        #for group_name in self.hdf5_file:
-        #    for data_set in group_name:
-        #        min_pulses.append(min(data_set[0])) #are the numbers pure y vals?
 
         keys=hdf5_file.keys()
         groups=[]
@@ -64,28 +46,18 @@ class hdf5_read:
                     data_set=group[data_set_name].value
                     min_pulses.append(np.min(data_set))
 
-        #print("min pulses",min_pulses)
-
         hdf5_file.close()
-        #y_hist, x_hist, patches = plt.hist(min_pulses, bins='auto')
-        #print(len(min_pulses))
-        plt.figure()#you just had this afterwards
+
+        plt.figure()
         x_hist, y_hist, patches = plt.hist(min_pulses, bins=100)#bins='auto')
 
         if save_plot:
-            #changed x and y order
-            #dk = plt.hist(min_pulses, bins='auto')
-            #print(dk)
             plt.yscale('log')
             plt.xlabel('Waveform Minimum Value (ADC)')
             plt.ylabel('Frequency')
             plt.title(''.join([self.file_name,' histogram']))
             plt.savefig(''.join([self.file_name,'_histogram']))
 
-        #return x_hist, y_hist, min_pulses#perhaps make it just return 2 max vals and min pulses?
-        #return the pedastal val="" and cutoff of single pe peak and then pulse vals
-        #return x_hist, y_hist, min_pulses
-        #return x.max(), y.max(), min_pulses
         return y_hist, min_pulses
 
     def temp_vs_min(self,title):
@@ -160,12 +132,11 @@ class hdf5_read:
 
 
         def calc_cutoff(lst):
-            pedastal=max(lst)#yhist might be wrong
+            pedastal=max(lst)
             ind=lst.index(pedastal)
             lst.pop(ind)
             pe_peak=max(lst)
-            #define local functions for much of this stuff
-            #is smaller actually correct here?
+
             while pe_peak>pedastal*0.98:
                 ind=lst.index(pe_peak)
                 lst.pop(ind) #loop this?
@@ -175,13 +146,6 @@ class hdf5_read:
             return cutoff
 
 
-        dataset_keys=[]
-        #scan_vals=[]
-        #old_pos=0
-        p=0
-        #pos=0
-
-
         def position_vals():
             keys=hdf5_file.keys()
             groups=[]
@@ -189,18 +153,10 @@ class hdf5_read:
             for key in keys:
                 groups.append(hdf5_file[key])
             for group in groups:
-                for data_set_name in group.keys():
+                for data_set_name in group.keys():#order these
                     if data_set_name=="ch0":
                         data_set=group[data_set_name].value
                         dset=group[data_set_name]
-                        #min_pulses.append(np.min(data_set))
-                        #read in SCAN vals
-
-                        #temp commented out
-                        #k=list(dset.attrs.keys())
-                        #v=list(dset.attrs.values())
-                        #ind=k.index("position")
-                        #p=v[ind]
 
                         #moto_exists=dset.attrs["motors running"]
                         moto_exists=False#temporary for debugging
@@ -212,13 +168,10 @@ class hdf5_read:
 
                         scan_vals.append(pos)
 
-            scan_vals=list(map(int, scan_vals))
-            scan_vals.sort()
-            print("scan val length",len(scan_vals))
             return moto_exists, scan_vals
 
 
-        def detection_eff():
+        def detection_eff(scan_vals):
             i=0
             x_pos=[]
             y_pos=[]
@@ -228,12 +181,11 @@ class hdf5_read:
             if moto_exists:
                 old_pos=[0,0]
                 for pos in scan_vals:
-                    if pos[0] == old_pos[0] and pos[1]==old_pos[1]:#fix to have x and y
+                    if pos[0] == old_pos[0] and pos[1]==old_pos[1]:
                         temp_lst.append(min_pulses[i])
 
                     else:
-                        x_pos.append(old_pos[0])#blank list rn though, keep in mind it might not always start at 0,0, but why did it even go where
-                            #maybe it returns string FALSE which is treeted like bool true
+                        x_pos.append(old_pos[0])
                         y_pos.append(old_pos[1])
 
                         collective.append([old_pos,temp_lst])
@@ -246,14 +198,13 @@ class hdf5_read:
 
             else:
                 old_pos=0
-                for pos in scan_vals:#looks to be arrays in scan vals?
+                for pos in scan_vals:
                     if pos == old_pos:
-                        temp_lst.append(min_pulses[i])#you are going through i
-
+                        temp_lst.append(min_pulses[i])
                     else:
                         x_pos.append(old_pos)
                         y_pos.append(old_pos)
-
+                        #print(old_pos)
                         collective.append([old_pos,temp_lst])
                         temp_lst=[]
                         temp_lst.append(min_pulses[i])
@@ -264,57 +215,35 @@ class hdf5_read:
                 x_pos=list(map(lambda x: x//10, x_pos))
                 y_pos=list(map(lambda y: y%10, y_pos))
 
-
             d_eff_list=[]
 
-            for i in range(len(collective)-1):
-                loc=collective[i+1][0]
-                pulse_list=collective[i+1][1]
+            for i in range(len(collective)):
+                loc=collective[i][0]
+                pulse_list=collective[i][1]
                 hits=0
                 numof_pulses=len(pulse_list)
                 for pulse in pulse_list:
-                        #if pulse<cutoff:
-                    if pulse<cutoff: #temporary because of 2048 issue FIX
-                        #if pulse>cutoff:
+                    if pulse<cutoff:
                         hits+=1
 
                 hits1=float(hits)
                 pulses=float(numof_pulses)
-                d_eff=hits1/pulses
+                if pulses>0:
+                    d_eff=hits1/pulses
+                else:
+                    d_eff=0.0
                 d_eff_list.append(d_eff)
-                #print(d_eff)
-
-            print("length of d_eff_list",len(d_eff_list))#way too big
-            d_eff_list.insert(0,0) #temporary
 
             return d_eff_list, x_pos, y_pos
 
 
         def plotting():
+            xl,yl=np.meshgrid(x,y)
 
-            #xl=np.linspace(0,10,10)
-            #yl=np.linspace(0,10,10)#generalize this part
-            xl,yl=np.meshgrid(x,y)#maybe you dont need a meshgrid
-            #how to set it up? this seems hard
-            #xl,yl=np.meshgrid(xl,yl)
-
-            #you wanna put it on a grid so you go
-            #d_eff_l
-            #Z=np.resize(d_eff_l,)
-            side=int(np.sqrt(len(d_eff_l)))#split this length into its sqrt?
+            side=int(np.sqrt(len(d_eff_l)))
             Z=np.resize(d_eff_l,(side,side))
-            #print(d_eff_l.shape)
-            #Z=np.resize(d_eff_l,xl.shape)
-            #is deffl the same length as this?
-            #Z=np.random.random((10,10))
 
-            #color_map = plt.imshow(x)
-            #color_map.set_cmap("Blues_r")
-            #plt.colorbar()
-
-            #i cant find where other cmap was specified so im doing it right in imshow
             plt.figure(figsize=(5, 5))
-            #plt.imshow(Z, cmap=plt.cm.get_cmap(name='magma'), interpolation='nearest', extent=[0,10,0,10]) #make extent dynamic later
             plt.imshow(Z, cmap=newcmp, interpolation='nearest', extent=[min(x),max(x),min(y),max(y)])#make extent dynamic
             plt.colorbar()
             plt.xlabel('X positon [m]')
@@ -325,38 +254,32 @@ class hdf5_read:
 
         hdf5_file=h5py.File(''.join([self.file_name,'ScanEvents', '.hdf5']), 'r')
         print("progress:")
-        #min_pulses=[] #get this stuff returned from histo?
+
         y_hist, min_pulses = self.min_vals_histo(False)
-        cutoff = calc_cutoff(list(y_hist)) #stop using local and global names twice
-        # move non-functions down
-        #scan_vals = position_vals()
+        cutoff = calc_cutoff(list(y_hist))
+
         print("1/4")
-        moto_exists, scan_vals=position_vals()
+
+        moto_exists, scan_lst=position_vals()
         moto_exists=False #this is done temporarily to debug SCAN
-        #print(moto_exists, type(moto_exists))
+
         print("2/4")
-        d_eff_l, x, y = detection_eff()
+
+        d_eff_l, x, y = detection_eff(scan_lst)
 
         hdf5_file.close()
         print("3/4")
 
-        #mention that you set nan to 0?
+        # setting values of exactly zero equal to nan
+        # so they show up as white on the plot
         for i in range(len(d_eff_l)):
             if d_eff_l[i] == 0.0:
                 d_eff_l[i] = np.nan
 
-
-
         plotting()
-        #Z=np.random.random((10,10))
-        #plotting_helper.heat_plot()
+
         print("4/4 \nplot saved in midas2hdf5 folder")
-        #arr = []
-        #for i in range(len(x_pos)):
-            #arr.append([x_pos[i],y_pos[i],d_eff_list[i]])
-        #X = np.array(arr, dtype=np.float64)
-        #a=np.array(x_pos,y_pos,d_eff_list)
-        #X = [x_pos,y_pos,d_eff_list]
+
 
 
     def pe_levels(self):
@@ -371,43 +294,18 @@ class hdf5_read:
         three_pe_pourcentage=4.98
         four_pe_pourcentage=1.83
         five_pe_pourcentage=0.674
-        #calculate the rest
+
         y_hist, min_pulses = self.min_vals_histo(False)
-        noise_cutoff=max(y_hist)-3#should be around 2350
+        noise_cutoff=max(y_hist)-3
 
-        #str_toprint1=str(''.join(["bottom of noise",str(noise_cutoff)]))
-        #print(str_toprint1)
-
-        noise_only=list(filter(lambda x: x>=noise_cutoff, min_pulses)) #shouldnt it be <
-        #pe_observed=list(filter(lambda x: x>2350, min_pulses))
+        noise_only=list(filter(lambda x: x>=noise_cutoff, min_pulses))
         numof_noise_only=len(noise_only)
         numof_total_pulses=len(min_pulses)
-        #print(numof_noise_only,numof_total_pulses)
-        #numof_pe_observed=len(pe_observed)
+
         pourcentage_of_noise=100*numof_noise_only/numof_total_pulses
 
         str_toprint=str(''.join(["percentage of triggers with no P.E. pulses in them: ", str(pourcentage_of_noise), "%"]))
         print(str_toprint)
-
-        #if 46.8<pourcentage_of_noise<100:#make this more dybnamic like single pourcentage +10
-        #    print("Most likely no PE")
-
-        #elif abs(pourcentage_of_noise-single_pe_pourcentage)<=10:
-        #    print("Single PE levels")
-
-        #elif 18.5<pourcentage_of_noise<26.8:
-        #    print("1-2 PE")
-
-        #elif abs(pourcentage_of_noise-double_pe_pourcentage)<=5:
-        #    print("Double PE levels")
-
-        #elif abs(pourcentage_of_noise-more_pe_pourcentage)<=5:
-        #    print("Three or more PE")
-
-        #else:
-        #    print("Many PEs")
-
-        #maybe standardize just like +-5% of the value
 
         if (one_pe_pourcentage+5)<=pourcentage_of_noise<=100:
             print("Zero PE")
@@ -434,12 +332,10 @@ class hdf5_read:
             print("Does not clearly fit a PE level")
 
 
+
 fname=sys.argv[1]
 function=sys.argv[2]
-#plot_title=sys.argv[2]
-#bins=sys.argv[3]
 
-#test=hdf5_read("".join([writename,"ScanEvents"]))
 obj=hdf5_read(fname)
 
 if function=='histogram':
