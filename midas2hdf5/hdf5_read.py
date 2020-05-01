@@ -344,8 +344,8 @@ class hdf5_read:
 
 
         #plotting()
-        Z=np.random.random((10,10))
-        plotting_helper.heat_plot(Z)
+        #Z=np.random.random((10,10))
+        plotting_helper.heat_plot()
         print("4/4 \n plot saved in midas2hdf5 folder")
         #arr = []
         #for i in range(len(x_pos)):
