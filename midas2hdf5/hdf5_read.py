@@ -34,12 +34,13 @@ class hdf5_read:
         min_pulses=[]
 
 
-        keys=hdf5_file.keys()
+        keys=hdf5_file.keys() #order these keys somehow? what are the key vals? I THINK ITS EVENT #
+        keys.sort() #does this make it work all now more in order?
         groups=[]
         for key in keys:
             groups.append(hdf5_file[key])
 
-        dataset_keys=[]
+        #dataset_keys=[]
         for group in groups:
             for data_set_name in group.keys():
                 if data_set_name=="ch0":
@@ -148,6 +149,7 @@ class hdf5_read:
 
         def position_vals():
             keys=hdf5_file.keys()
+            keys.sort()#addeed this
             groups=[]
             scan_vals=[]
             for key in keys:
@@ -165,7 +167,7 @@ class hdf5_read:
                             pos=dset.attrs["moto position"]
                         else:
                             pos=dset.attrs["scan position"]
-
+                        print(pos)
                         scan_vals.append(pos)
 
             return moto_exists, scan_vals
