@@ -4,13 +4,15 @@
 #
 # Edits made by Ashley Ferreira, Feb 2020
 
+# chaged so it only gives you indiv pmt data right now
+
 import numpy as np
 
 
 class TDT743_decoder:
     '''
-    used in a_midas2hdf5.py to convert from MIDAS format to
-    key information needed to write to hdf5 file
+    used in midas2hdf5.py to retrieve
+    key information needed to write to hdf5
     '''
     def __init__(self, all_data, bank_name):
         self.data=all_data
