@@ -18,8 +18,9 @@ from matplotlib.colors import ListedColormap, LinearSegmentedColormap
 
 class hdf5_read:
     '''
-    after you call a_midas2hdf5.py to save MIDAS data
-    reads hdf5 file created by a_midas2hdf5.py and interprets digitizer data
+    after you call midas2hdf5.py to save MIDAS data to an HDF5 file this
+    class includes functions which read the HDF5 file created and analyze
+    the data in different ways
     '''
     def __init__(self, hdf5_file_name):
         self.file_name=hdf5_file_name
@@ -27,31 +28,52 @@ class hdf5_read:
 
     def min_vals_histo(self, save_plot):
         '''
-        makes historgram of pulses
-        with bin number generated automatically
+        makes historgram of minimum pulse values
+        with bin number set automatically
         '''
+        # open the hdf5 file for reading
         hdf5_file=h5py.File(''.join([self.file_name, 'ScanEvents', '.hdf5']), 'r')
-        min_pulses=[]
 
+        # save the name of all the groups (events)
+        # stored in the hdf5 file
+        keys=hdf5_file.keys()
 
-        keys=hdf5_file.keys() #order these keys somehow? what are the key vals? I THINK ITS EVENT #
-        keys.sort() #does this make it work all now more in order?
+        # since the groups are python dictorinary
+        # keys they are not sorted in the order that they
+        # were stored so they need to be formatted
+        # and then properly stored
+        keys=list(map(int, list(keys)))
+        keys.sort()
+
+        # make a list containing all the groups in the file
         groups=[]
         for key in keys:
-            groups.append(hdf5_file[key])
+            groups.append(hdf5_file[str(key)])
 
-        #dataset_keys=[]
+        # initialize the list to store all the
+        # minimum pulse values
+        min_pulses=[]
+
+        # loop through each group and store the
+        # PMT data from digitizer ch0 into
+        # data_set and then find the minimum value
+        # of data_set to find the minimum pulse value
         for group in groups:
             for data_set_name in group.keys():
                 if data_set_name=="ch0":
                     data_set=group[data_set_name].value
                     min_pulses.append(np.min(data_set))
 
+        # close the hdf5 file for reading
         hdf5_file.close()
 
+        # create histogram of the minimum pulse values
         plt.figure()
         x_hist, y_hist, patches = plt.hist(min_pulses, bins=100)#bins='auto')
 
+        # if the plot needs to be visually seen (sometimes just the values
+        # plt.hist returns are needed) then this section will plot the histogram
+        # and save it as a picture under the midas2hdf5 folder
         if save_plot:
             plt.yscale('log')
             plt.xlabel('Waveform Minimum Value (ADC)')
@@ -61,9 +83,12 @@ class hdf5_read:
 
         return y_hist, min_pulses
 
+
     def temp_vs_min(self,title):
         '''
-        plots temperature of 5 sensors versus pmt data
+        plots temperature of 5 sensors versus PMT data
+        THIS CODE WAS NOT FINISHED // THE SENSORS HAVE NOT BEEN INSTALLED
+        AND SO MIDAS JUST READS IN CONSTANT PRESET TEMPERATURES
 
         hdf5_file=h5py.File(''.join([self.file_name, 'ScanEvents', '.hdf5']), 'r')
         min_pulses=[]
@@ -113,7 +138,7 @@ class hdf5_read:
         creates a heat map of detection efficiency for every
         point in MIDAS test stand scan
         '''
-        #magma_r.colors gives us the values below
+        # magma_r.colors gives us the colormap values below
         reversed_magma=np.array([[0.987053, 0.991438, 0.749504, 1.00000],
                         [0.995131, 0.827052, 0.585701, 1.00000],
                         [0.996341, 0.660969, 0.451160, 1.00000],
@@ -127,59 +152,122 @@ class hdf5_read:
                         [0.0697640, 0.0497260, 0.193735, 1.00000],
                         [0.00146200, 0.000466000, 0.013866, 1.00000]])
 
-
+        # using the magma_r.color values we are able to create the
+        # whole color map using ListedColormap()
         newcmp = ListedColormap(reversed_magma)
+
+        # we then set nan values to show up as 'white'
+        # which we will use to help us see errors
         newcmp.set_bad(color='w')
 
 
         def calc_cutoff(lst):
+            '''
+            calculates the single PE ADC cutoff value from the minimum pulse
+            histogram bar values. specifically, it picks the ADC value
+            directly between the pedastal and single PE peak.
+            '''
+            # assumes pedestal is tallest point on minimum
+            # pulse histogram
             pedastal=max(lst)
+
+            # assumes single PE peak is second tallest
+            # point on minimum pulse historgam
             ind=lst.index(pedastal)
             lst.pop(ind)
             pe_peak=max(lst)
 
+            # if the single PE peak is too close to the
+            # pedestal it recalculates the single PE peak
             while pe_peak>pedastal*0.98:
                 ind=lst.index(pe_peak)
                 lst.pop(ind) #loop this?
                 pe_peak=max(lst)
 
+            # calculates the cutoff to be the point between
+            # the single PE peak and the pedastal
             cutoff=(pedastal+pe_peak)/2
             return cutoff
 
 
         def position_vals():
+            '''
+            creates a list of the xy position values
+            at each event # using MOTO bank if motors
+            are running, and the SCAN bank if not
+
+            '''
+            # open the hdf5 file for reading
+            hdf5_file=h5py.File(''.join([self.file_name, 'ScanEvents', '.hdf5']), 'r')
+
+            # save the name of all the groups (events)
+            # stored in the hdf5 file
             keys=hdf5_file.keys()
-            keys.sort()#addeed this
+
+            # since the groups are python dictorinary
+            # keys they are not sorted in the order that they
+            # were stored so they need to be formatted
+            # and then properly stored
+            keys=list(map(int, list(keys)))
+            keys.sort()
+
+            # make a list containing all the groups in the file
             groups=[]
-            scan_vals=[]
             for key in keys:
-                groups.append(hdf5_file[key])
+                groups.append(hdf5_file[str(key)])
+
+            # initialize the list to store all the
+            # position values from the scan
+            scan_vals=[]
+
+            # loop through each group and store the
+            # position data in scan_vals
+            #
+            # when the motors are not running this code
+            # uses the SCAN bank to simulate xy data that
+            # would normally come from the MOTO bank
             for group in groups:
-                for data_set_name in group.keys():#order these
+                for data_set_name in group.keys():
                     if data_set_name=="ch0":
                         data_set=group[data_set_name].value
                         dset=group[data_set_name]
 
-                        #moto_exists=dset.attrs["motors running"]
-                        moto_exists=False#temporary for debugging
+                        moto_exists=dset.attrs["motors running"]
 
                         if moto_exists:
                             pos=dset.attrs["moto position"]
                         else:
                             pos=dset.attrs["scan position"]
-                        print(pos)
+
                         scan_vals.append(pos)
 
             return moto_exists, scan_vals
 
 
         def detection_eff(scan_vals):
+            '''
+            calculates the detection efficiency at each xy position
+            and creates a list of all the xy positions without duplicates
+            '''
+
+            # initialize counter
             i=0
+
+            # initialize list to store xy positions
             x_pos=[]
             y_pos=[]
+
+            # initialize list to save xy position and
+            # minimum pulse values associated with that position
             collective=[]
+
+            # initialize list to use as temporary storage in loop
             temp_lst=[]
 
+            # if the motors are running use real xy position values
+            #
+            # for each position, associate a list of all the
+            # minimum pulse values at that position
             if moto_exists:
                 old_pos=[0,0]
                 for pos in scan_vals:
@@ -197,7 +285,10 @@ class hdf5_read:
                     i+=1
                     old_pos=pos
 
-
+            # if motos aren't running, use simulated xy data from SCAN bank
+            #
+            # for each position, associate a list of all the
+            # minimum pulse values at that position
             else:
                 old_pos=0
                 for pos in scan_vals:
@@ -206,7 +297,6 @@ class hdf5_read:
                     else:
                         x_pos.append(old_pos)
                         y_pos.append(old_pos)
-                        #print(old_pos)
                         collective.append([old_pos,temp_lst])
                         temp_lst=[]
                         temp_lst.append(min_pulses[i])
@@ -217,8 +307,13 @@ class hdf5_read:
                 x_pos=list(map(lambda x: x//10, x_pos))
                 y_pos=list(map(lambda y: y%10, y_pos))
 
+            # initilize list of detection efficiency at each point
             d_eff_list=[]
 
+            # for each xy position, calculate the pourcentage of
+            # associated minimum pulse values which lie below
+            # the cutoff ADC val (which mean a PE was seen by the PMT)
+            # then save these pourcentages in d_eff_list
             for i in range(len(collective)):
                 loc=collective[i][0]
                 pulse_list=collective[i][1]
@@ -240,13 +335,18 @@ class hdf5_read:
 
 
         def plotting():
-            xl,yl=np.meshgrid(x,y)
-
+            '''
+            using the list of detection efficincies and the xy positions
+            this function plots a heat map of the detection efficiencies
+            on the xy positions of the scan
+            '''
             side=int(np.sqrt(len(d_eff_l)))
             Z=np.resize(d_eff_l,(side,side))
 
+            # plots heat map for detection efficiency and saves photo of it
+            # under the midas2hdf5 folder
             plt.figure(figsize=(5, 5))
-            plt.imshow(Z, cmap=newcmp, interpolation='nearest', extent=[min(x),max(x),min(y),max(y)])#make extent dynamic
+            plt.imshow(Z, cmap=newcmp, interpolation='nearest', extent=[min(x),max(x),min(y),max(y)])
             plt.colorbar()
             plt.xlabel('X positon [m]')
             plt.ylabel('Y positon [m]')
@@ -254,21 +354,21 @@ class hdf5_read:
             plt.savefig(''.join([self.file_name,'_detectionEfficency']))
 
 
+        # opens the hdf5 file for reading
         hdf5_file=h5py.File(''.join([self.file_name,'ScanEvents', '.hdf5']), 'r')
+
+        # print the progress of the program
         print("progress:")
 
         y_hist, min_pulses = self.min_vals_histo(False)
         cutoff = calc_cutoff(list(y_hist))
-
         print("1/4")
 
         moto_exists, scan_lst=position_vals()
-        moto_exists=False #this is done temporarily to debug SCAN
-
         print("2/4")
 
         d_eff_l, x, y = detection_eff(scan_lst)
-
+        # closes the hdf5 file for reading
         hdf5_file.close()
         print("3/4")
 
@@ -279,7 +379,6 @@ class hdf5_read:
                 d_eff_l[i] = np.nan
 
         plotting()
-
         print("4/4 \nplot saved in midas2hdf5 folder")
 
 
@@ -327,19 +426,25 @@ class hdf5_read:
         elif (five_pe_pourcentage-0.2)<=pourcentage_of_noise<(five_pe_pourcentage+0.2):
             print("Five PE")
 
-        elif (five_pe_pourcentage-0.2)>=pourcentage_of_noise>=0:#make sure all of these make sense
+        elif (five_pe_pourcentage-0.2)>=pourcentage_of_noise>=0:
             print("Six or more PE")
 
         else:
             print("Does not clearly fit a PE level")
 
 
-
+# takes in hdf5 file name to read from as second
+# command line argument
 fname=sys.argv[1]
+
+# takes in function user wishes to execute as third
+# commend line argument
 function=sys.argv[2]
 
+# initialize hdf5_read class with the hdf5 file name
 obj=hdf5_read(fname)
 
+# executes function user was interested in
 if function=='histogram':
     obj.min_vals_histo(True)
 elif function=='scan':
